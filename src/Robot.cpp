@@ -199,7 +199,6 @@ public:
                                         << "Turning Left 90 degrees\n";
                         }
 		}
-
 	}
 
 	void AutonomousPeriodic() {

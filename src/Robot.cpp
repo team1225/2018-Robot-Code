@@ -197,8 +197,8 @@ public:
 		double allowableError = 5, period = 0.01;
 		float P = 0, I = 0, D = 0, effort,
 				currentAngle, error, errorLast=targetAngle;
-		gyro.Reset();
-		while (currentAngle = gyro.GetAngle(),
+		imu.Reset();
+		while (currentAngle = imu.GetAngle(),
 				((currentAngle >=targetAngle-allowableError)
 				|| (currentAngle >=targetAngle+allowableError))
 				&& IsEnabled() && IsAutonomous()

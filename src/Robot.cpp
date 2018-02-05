@@ -200,7 +200,6 @@ public:
                                         << "Turning Left 90 degrees\n";
                         }
 		}
-
 	}
 	
 	/*{ demo Auto

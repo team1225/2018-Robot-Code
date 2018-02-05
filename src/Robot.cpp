@@ -101,15 +101,25 @@ public:
 		rightDrive->GetFaults(_faults_R);
 
 		if (_faults_L.SensorOutOfPhase) {
-			std::cout << " Left drive sensor is out of phase";
+			std::cout << " Left drive sensor is out of phase\n";
 		}
 		if (_faults_R.SensorOutOfPhase) {
-			std::cout << " Right drive sensor is out of phase";
+			std::cout << " Right drive sensor is out of phase\n";
 		}
 	}
 
 	void AutonomousInit() {
-		
+		// Collect Options
+		std::string targets = frc::DriverStation::GetInstance().GetGameSpecificMessage();
+		char optionTarget = targets[0];
+		std::string optionStart = startingPosition.GetSelected();
+		std::string optionDrop = autoDrop.GetSelected();
+		std::string optionDelay = autoDelay.GetSelected();
+		// Output to console, for debugging
+		std::cout << "Switch target is " << optionTarget << " from " << targets << "\n";
+		std::cout << "Starting from " << optionStart << "\n";
+		std::cout << "Power Cube Drop? " << optionDrop << "\n";
+		std::cout << "Delay Option: " << optionDelay << "\n";
 	}
 	
 	

@@ -207,19 +207,20 @@ public:
 			}
 		} else if (optionStart == pos3) {
 			if (optionTarget == 'R' && optionDrop == autoDropYes) { 
-                                std::cout << "Dropping from the same side, Right\n"
-                                        << "Driving 14ft\n"             
-                                        << "Turning Left 90 degrees\n" 
-                                        << "Dropping cube\n"            
-                                        << "Backing up\n";              
-                        } else if (optionTarget == 'L' || optionDrop == autoDropNo) {
-                                std::cout << "Not dropping, driving past switch\n"
-                                        << "Driving 17ft\n"             
-                                        << "Turning Left 90 degrees\n";
-                        }
+				std::cout << "Dropping from the same side, Right\n"
+					<< "Driving 14ft\n"
+					<< "Turning Left 90 degrees\n"
+					<< "Dropping cube\n"
+					<< "Backing up\n";
+			} else if (optionTarget == 'L' || optionDrop == autoDropNo) {
+				std::cout << "Not dropping, driving past switch\n"
+					<< "Driving 17ft\n"
+					<< "Turning Left 90 degrees\n";
+			}
 		}
-	}
 
+	}
+	
 	void AutonomousPeriodic() {
 	}
 

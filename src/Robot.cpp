@@ -253,6 +253,7 @@ public:
 					<< "Driving 6ft\n"
 					<< "Turning Right 90 degrees\n"
 					<< "Dropping cube\n";
+
 				// Stack actions, in reverse
 				autoActions.push(AUTO_DROP_CUBE);
 				autoActions.push(AUTO_TURN_RIGHT);

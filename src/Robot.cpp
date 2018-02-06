@@ -244,8 +244,9 @@ public:
 					<< "Turning Left 90 degrees\n";
 			}
 		}
-	}
 
+	}
+	
 	void AutonomousPeriodic() {
 		if ((leftDrive.GetMotorOutputPercent() == 0) &&
 				(rightDrive.GetMotorOutputPercent() == 0)) {

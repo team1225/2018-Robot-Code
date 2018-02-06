@@ -246,7 +246,7 @@ public:
 					<< "Turning right 90 degrees\n";
 			}
 		} else if (optionStart == pos3) {
-			if (optionTarget == 'R' && optionDrop == autoDropYes) { 
+			if (optionTarget == 'R' && optionDrop == autoDropYes) {
 				std::cout << "Dropping from the same side, Right\n"
 					<< "Driving 14ft\n"
 					<< "Turning Left 90 degrees\n"

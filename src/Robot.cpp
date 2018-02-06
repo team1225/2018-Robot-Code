@@ -147,6 +147,61 @@ public:
 		std::cout << "Starting from " << optionStart << "\n";
 		std::cout << "Power Cube Drop? " << optionDrop << "\n";
 		std::cout << "Delay Option: " << optionDelay << "\n";
+
+		if (optionDelay == autoDelayYes) {
+			frc::Wait(5);
+		}
+
+		if (optionStart == pos2) {
+			std::cout << "In the middle\n";
+			if (optionDrop == autoDropYes && optionTarget == 'L') {
+				std::cout << "Dropping on the switch's Left\n"
+					<< "Driving 6ft\n"
+					<< "Turning Left 90 degrees\n"
+					<< "Driving 8ft\n"
+					<< "Turning Right 90 degrees\n"
+					<< "Driving 6ft\n"
+					<< "Turning Right 90 degrees\n"
+					<< "Dropping cube\n";
+			} else if (optionDrop == autoDropYes && optionTarget == 'R') {
+				std::cout << "Dropping on the switch's Right\n"
+					<< "Driving 6ft\n"
+					<< "Turning Right 90 degrees\n"
+					<< "Driving 8ft\n"
+					<< "Turning Left 90 degrees\n"
+					<< "Driving 6ft\n"
+					<< "Turning Left 90 degrees\n"
+					<< "Dropping cube\n";
+			} else if (optionDrop == autoDropNo) {
+				std::cout << "Not dropping, crossing auto line\n"
+					<< "Driving 12 ft\n";
+			}
+		} else if (optionStart == pos1) {
+			if (optionTarget == 'L' && optionDrop == autoDropYes) {
+				std::cout << "Dropping from the same side, Left\n"
+					<< "Driving 14ft\n"
+					<< "Turning Right 90 degrees\n"
+					<< "Dropping cube\n"
+					<< "Backing up\n";
+			} else if (optionTarget == 'R' || optionDrop == autoDropNo) {
+				std::cout << "Not dropping, driving past switch\n"
+					<< "Driving 17ft\n"
+					<< "Turning right 90 degrees\n";
+			}
+		} else if (optionStart == pos3) {
+			if (optionTarget == 'R' && optionDrop == autoDropYes) { 
+                                std::cout << "Dropping from the same side, Right\n"
+                                        << "Driving 14ft\n"             
+                                        << "Turning Left 90 degrees\n" 
+                                        << "Dropping cube\n"            
+                                        << "Backing up\n";              
+                        } else if (optionTarget == 'L' || optionDrop == autoDropNo) {
+                                std::cout << "Not dropping, driving past switch\n"
+                                        << "Driving 17ft\n"             
+                                        << "Turning Left 90 degrees\n";
+                        }
+		}
+
 	}
 
 	void AutonomousPeriodic() {

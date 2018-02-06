@@ -299,8 +299,9 @@ public:
 					<< "Turning Left 90 degrees\n";
 			}
 		}
-	}
 
+	}
+	
 	void AutonomousPeriodic() {
 		int action = autoActions.top();
 		autoActions.pop();

@@ -85,7 +85,7 @@ public:
 				);
 		frc::SmartDashboard::PutNumber("Amps",
 				((leftDrive->GetOutputCurrent() + rightDrive->GetOutputCurrent()) / 2)
-3333333
+				);
 		/* drive robot */
 		robotDrive->ArcadeDrive(forw, turn, false);
 		

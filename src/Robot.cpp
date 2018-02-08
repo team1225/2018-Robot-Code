@@ -38,7 +38,7 @@ public:
 			*leftDrive,
 			*rightDrive);
 
-	DoubleSolenoid * grabber = new DoubleSolenoid(0, 1);
+//	DoubleSolenoid * grabber = new DoubleSolenoid(0, 1);
 
 	Joystick * joystick = new Joystick(0);
 
@@ -79,16 +79,16 @@ public:
 		robotDrive->ArcadeDrive(forw, turn, false);
 		
 		/* close/open grabber */
-		if (joystick->GetRawButton(6) && !joystickButton6DBounce) {
-			joystickButton6DBounce = true;
-			if (grabber->Get() == DoubleSolenoid::kOff) {
-				grabber->Set(DoubleSolenoid::kReverse);
-			} else if (grabber->Get() == DoubleSolenoid::kForward) {
-				grabber->Set(DoubleSolenoid::kReverse);
-			} else if (grabber->Get() == DoubleSolenoid::kReverse) {
-				grabber->Set(DoubleSolenoid::kForward);
-			}
-		} else { joystickButton6DBounce = false; }
+//		if (joystick->GetRawButton(6) && !joystickButton6DBounce) {
+//			joystickButton6DBounce = true;
+//			if (grabber->Get() == DoubleSolenoid::kOff) {
+//				grabber->Set(DoubleSolenoid::kReverse);
+//			} else if (grabber->Get() == DoubleSolenoid::kForward) {
+//				grabber->Set(DoubleSolenoid::kReverse);
+//			} else if (grabber->Get() == DoubleSolenoid::kReverse) {
+//				grabber->Set(DoubleSolenoid::kForward);
+//			}
+//		} else { joystickButton6DBounce = false; }
 
 		/* get sensor values */
 		//double leftPos = _leftFront->GetSelectedSensorPosition(0);

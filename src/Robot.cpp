@@ -107,7 +107,7 @@ public:
 		frc::SmartDashboard::PutNumber("Volts",
 			((leftDrive.GetMotorOutputVoltage() + rightDrive.GetMotorOutputVoltage()) / 2)
 		);
-		frc::SmartDashboard::PutNumber("Amps",
+		frc::SmartDashboard::PutNumber("Amps",\
 			((leftDrive.GetOutputCurrent() + rightDrive.GetOutputCurrent()) / 2)
 		);
 

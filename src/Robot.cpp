@@ -30,11 +30,9 @@ public:
 	 * */
 	WPI_TalonSRX * rightDrive = new WPI_TalonSRX(11);
 	WPI_TalonSRX * leftDrive = new WPI_TalonSRX(10);
-	WPI_TalonSRX * arms = new WPI_TalonSRX(20);
 
 	Faults _faults_L;
 	Faults _faults_R;
-	Faults _faults_A;
 
 	DifferentialDrive * robotDrive = new DifferentialDrive(
 			*leftDrive,
@@ -80,15 +78,6 @@ public:
 		/* drive robot */
 		robotDrive->ArcadeDrive(forw, turn, false);
 		
-		/* run arms */
-		if (joystick->GetRawButton(6)) {
-			arms->Set(1.00);
-		} else if (joystick->GetRawButton(8)) {
-			arms->Set(-1.00);
-		} else {
-			arms->Set(0);
-		}
-
 		/* close/open grabber */
 		if (joystick->GetRawButton(6) && !joystickButton6DBounce) {
 			joystickButton6DBounce = true;
@@ -110,16 +99,12 @@ public:
 		/* drive motor at least 25%, Talons will auto-detect if sensor is out of phase */
 		leftDrive->GetFaults(_faults_L);
 		rightDrive->GetFaults(_faults_R);
-		arms->GetFaults(_faults_A);
 
 		if (_faults_L.SensorOutOfPhase) {
 			std::cout << " Left drive sensor is out of phase";
 		}
 		if (_faults_R.SensorOutOfPhase) {
 			std::cout << " Right drive sensor is out of phase";
-		}
-		if (_faults_A.SensorOutOfPhase) {
-			std::cout << " Arm sensor is out of phase";
 		}
 	}
 
@@ -157,20 +142,16 @@ public:
 		/* Set motor inverts */
 		leftDrive->SetInverted(false);
 		rightDrive->SetInverted(false);
-		arms->SetInverted(false);
 
 
 		leftDrive->SetSensorPhase(true);
 		rightDrive->SetSensorPhase(true);
-		arms->SetSensorPhase(true);
 
 		/* Set 2 second ramp up */
 		//leftDrive->ConfigOpenloopRamp(.5,11000);
 		//leftDrive->ConfigClosedloopRamp(.5, 1000);
 		//rightDrive->ConfigOpenloopRamp(.5, 1000);
 		//rightDrive->ConfigClosedloopRamp(.5, 1000);
-		//arms->ConfigOpenloopRamp(.5, 1000);
-		//arms->ConfigClosedloopRamp(.5, 1000);
 
 		/* Send auto options */
 		// Starting Position

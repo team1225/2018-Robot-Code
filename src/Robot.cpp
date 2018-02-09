@@ -84,6 +84,7 @@ public:
 
 	void TeleopInit() {
 		robotDrive.SetSafetyEnabled(true);
+
 	}
 
 	void TeleopPeriodic() {

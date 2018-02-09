@@ -152,6 +152,7 @@ public:
 		rightDrive.Config_kP(0, 0.2, Constants.kTimeoutMs);
 		rightDrive.Config_kI(0, 0, Constants.kTimeoutMs);
 		rightDrive.Config_kD(0, 0, Constants.kTimeoutMs);
+		robotDrive->SetSafetyEnabled(false);
 
 		// Collect Options
 		std::string targets = frc::DriverStation::GetInstance().GetGameSpecificMessage();
@@ -255,6 +256,7 @@ public:
 		// Whether or not to wait
 		autoDelay.AddDefault(autoDelayNo, autoDelayNo);
 		autoDelay.AddObject(autoDelayYes, autoDelayYes);
+		frc::SmartDashboard::PutData("Auto Delay", &autoDelay);
 
 		// Calibrate Gyro
 		gyro.Calibrate();

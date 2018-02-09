@@ -82,6 +82,10 @@ public:
 		autoDelayYes = "Delay 5 sec",
 		autoDelayNo = "Do Not Delay 5 Seconds";
 
+	void TeleopInit() {
+		robotDrive.SetSafetyEnabled(true);
+	}
+
 	void TeleopPeriodic() {
 
 		/* get gamepad stick values */
@@ -151,6 +155,9 @@ public:
 	}
 
 	void AutonomousInit() {
+		// Disabling Safety
+		robotDrive.SetSafetyEnabled(false);
+
 		// Collect Options
 		std::string targets = frc::DriverStation::GetInstance().GetGameSpecificMessage();
 		char optionTarget = targets[0];
@@ -230,17 +237,23 @@ public:
 		leftDrive.SetSensorPhase(true);
 		rightDrive.SetSensorPhase(true);
 
+		// And Safety Expiration
+		robotDrive.SetExpiration(0.05);
+
 		/* Send auto options */
 		// Starting Position
 		startingPosition.AddDefault(pos1, pos1);
 		startingPosition.AddObject(pos2, pos2);
 		startingPosition.AddObject(pos3, pos3);
+		frc::SmartDashboard::PutData("Starting Position", &startingPosition);
 		// Whether or not to drop
 		autoDrop.AddDefault(autoDropYes, autoDropYes);
 		autoDrop.AddObject(autoDropNo,autoDropNo);
+		frc::SmartDashboard::PutData("Auto Drop", &autoDrop);
 		// Whether or not to wait
 		autoDelay.AddDefault(autoDelayNo, autoDelayNo);
 		autoDelay.AddObject(autoDelayYes, autoDelayYes);
+		frc::SmartDashboard::PutData("Auto Delay", &autoDelay);
 
 		// Calibrate Gyro
 		imu.Calibrate();

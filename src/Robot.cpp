@@ -293,6 +293,7 @@ public:
 		leftDrive.SetInverted(false);
 		rightDrive.SetInverted(false);
 
+		// Sensor Phase
 		leftDrive.SetSensorPhase(true);
 		rightDrive.SetSensorPhase(true);
 

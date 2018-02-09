@@ -90,7 +90,6 @@ public:
 
 	void TeleopInit() {
 		robotDrive.SetSafetyEnabled(true);
-
 	}
 
 	void TeleopPeriodic() {
@@ -307,6 +306,7 @@ public:
 		leftDrive.SetInverted(false);
 		rightDrive.SetInverted(false);
 
+		// Sensor Phase
 		leftDrive.SetSensorPhase(true);
 		rightDrive.SetSensorPhase(true);
 

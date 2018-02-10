@@ -160,7 +160,6 @@ public:
 		rightDrive.Config_kP(0, 0.2, Constants.kTimeoutMs);
 		rightDrive.Config_kI(0, 0, Constants.kTimeoutMs);
 		rightDrive.Config_kD(0, 0, Constants.kTimeoutMs);
-		robotDrive->SetSafetyEnabled(false);
 
 		// ToDo: Implement PidDrive
 		// Drive to targetPosition + currentPosition
@@ -171,7 +170,6 @@ public:
 		robotDrive.SetSafetyEnabled(false);
 
 		while (!autoActions.empty()) { autoActions.pop(); }
-
 		// Collect Options
 		std::string targets = frc::DriverStation::GetInstance().GetGameSpecificMessage();
 		char optionTarget = targets[0];

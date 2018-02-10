@@ -225,7 +225,6 @@ public:
 		robotDrive.SetSafetyEnabled(false);
 
 		while (!autoActions.empty()) { autoActions.pop(); }
-
 		// Collect Options
 		std::string targets = frc::DriverStation::GetInstance().GetGameSpecificMessage();
 		char optionTarget = targets[0];

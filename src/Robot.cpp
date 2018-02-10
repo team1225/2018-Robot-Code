@@ -40,8 +40,6 @@ public:
 
 	AnalogGyro * gyro = new AnalogGyro(1);
 
-	DoubleSolenoid * grabber = new DoubleSolenoid(0, 1);
-
 	Joystick * joystick = new Joystick(0);
 
 	SendableChooser<std::string> startingPosition;
@@ -80,6 +78,20 @@ public:
 		/* drive robot */
 		robotDrive->ArcadeDrive(forw, turn, false);
 		
+		/* lift/lower arm */
+		if (joystick->GetRawButton(8) && !joystickButton8DBounce) {
+                        joystickButton8DBounce = true;
+                        if (armLift->Get() == DoubleSolenoid::kOff) {
+                                armLift->Set(DoubleSolenoid::kReverse);
+                        } else if (armLift->Get() == DoubleSolenoid::kForward) {
+                                armLift->Set(DoubleSolenoid::kReverse);
+                        } else if (armLift->Get() == DoubleSolenoid::kReverse) {
+                                armLift->Set(DoubleSolenoid::kForward);
+                        }
+                } else if (!joystick->GetRawButton(8)) {
+			joystickButton8DBounce = false;
+		}
+
 		/* close/open grabber */
 		if (joystick->GetRawButton(6) && !joystickButton6DBounce) {
 			joystickButton6DBounce = true;
@@ -90,7 +102,9 @@ public:
 			} else if (grabber->Get() == DoubleSolenoid::kReverse) {
 				grabber->Set(DoubleSolenoid::kForward);
 			}
-		} else { joystickButton6DBounce = false; }
+		} else if (!joystick->GetRawButton(8)) {
+			joystickButton6DBounce = false;
+		}
 
 		/* get sensor values */
 		//double leftPos = _leftFront->GetSelectedSensorPosition(0);
@@ -176,6 +190,7 @@ public:
 
 private:
 	bool joystickButton6DBounce = false;
+	bool joystickButton8DBounce = false;
 };
 
 START_ROBOT_CLASS(Robot)

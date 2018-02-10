@@ -38,6 +38,8 @@ public:
 			*leftDrive,
 			*rightDrive);
 
+	AnalogGyro * gyro = new AnalogGyro(1);
+
 	DoubleSolenoid * grabber = new DoubleSolenoid(0, 1);
 
 	Joystick * joystick = new Joystick(0);
@@ -106,6 +108,9 @@ public:
 		if (_faults_R.SensorOutOfPhase) {
 			std::cout << " Right drive sensor is out of phase";
 		}
+
+		// output gyro angle
+		std::cout << "Gyro Angle:" << gyro->GetAngle();
 	}
 
 	void AutonomousInit() {
@@ -164,6 +169,9 @@ public:
 		// Whether or not to wait
 		autoDelay.AddDefault(autoDelayNo, autoDelayNo);
 		autoDelay.AddObject(autoDelayYes, autoDelayYes);
+
+		// Calibrate Gyro
+		gyro->Calibrate();
 	}
 
 private:

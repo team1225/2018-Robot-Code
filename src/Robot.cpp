@@ -13,10 +13,15 @@
 #include <SmartDashboard/SendableChooser.h>
 #include <SmartDashboard/SmartDashboard.h>
 #include <TimedRobot.h>
-#include "ctre/Phoenix.h"
-#include "Drive/DifferentialDrive.h"
-#include "Joystick.h"
+#include <ctre/Phoenix.h>
+#include <Drive/DifferentialDrive.h>
+#include <Joystick.h>
+#include <Commands/Command.h>
+#include <Commands/Scheduler.h>
+#include "RobotMap.h"
 
+#include "Subsystems/Claw.h"
+#include "Subsystems/Lifter.h"
 
 class Robot : public frc::TimedRobot {
 public:
@@ -39,6 +44,13 @@ public:
 			*rightDrive);
 
 	AnalogGyro * gyro = new AnalogGyro(1);
+
+	Claw claw{
+		CLAW_FWD_CHANNEL, CLAW_BWD_CHANNEL,
+		LEFT_RAM_FWD_CHANNEL, LEFT_RAM_BWD_CHANNEL,
+		RIGHT_RAM_FWD_CHANNEL, RIGHT_RAM_BWD_CHANNEL
+	};
+	Lifter lifter{LIFTER_FWD_CHANNEL, LIFTER_BWD_CHANNEL};
 
 	Joystick * joystick = new Joystick(0);
 
@@ -78,32 +90,28 @@ public:
 		/* drive robot */
 		robotDrive->ArcadeDrive(forw, turn, false);
 		
-		/* lift/lower arm */
-		if (joystick->GetRawButton(8) && !joystickButton8DBounce) {
-                        joystickButton8DBounce = true;
-                        if (armLift->Get() == DoubleSolenoid::kOff) {
-                                armLift->Set(DoubleSolenoid::kReverse);
-                        } else if (armLift->Get() == DoubleSolenoid::kForward) {
-                                armLift->Set(DoubleSolenoid::kReverse);
-                        } else if (armLift->Get() == DoubleSolenoid::kReverse) {
-                                armLift->Set(DoubleSolenoid::kForward);
-                        }
-                } else if (!joystick->GetRawButton(8)) {
-			joystickButton8DBounce = false;
+		/* lift/lower lifter */
+		if (joystick->GetRawButton(0) && !joystickButton0DBounce) {
+			joystickButton0DBounce = true;
+			lifter.Toggle();
+		} else if (!joystick->GetRawButton(0)) {
+			joystickButton0DBounce = false;
 		}
 
 		/* close/open grabber */
-		if (joystick->GetRawButton(6) && !joystickButton6DBounce) {
-			joystickButton6DBounce = true;
-			if (grabber->Get() == DoubleSolenoid::kOff) {
-				grabber->Set(DoubleSolenoid::kReverse);
-			} else if (grabber->Get() == DoubleSolenoid::kForward) {
-				grabber->Set(DoubleSolenoid::kReverse);
-			} else if (grabber->Get() == DoubleSolenoid::kReverse) {
-				grabber->Set(DoubleSolenoid::kForward);
-			}
-		} else if (!joystick->GetRawButton(8)) {
-			joystickButton6DBounce = false;
+		if (joystick->GetRawButton(1) && !joystickButton1DBounce) {
+			joystickButton1DBounce = true;
+			claw.Toggle();
+		} else if (!joystick->GetRawButton(1)) {
+			joystickButton1DBounce = false;
+		}
+
+		/* close/open grabber */
+		if (joystick->GetRawButton(2) && !joystickButton2DBounce) {
+			joystickButton2DBounce = true;
+			claw.Toggle();
+		} else if (!joystick->GetRawButton(2)) {
+			joystickButton2DBounce = false;
 		}
 
 		/* get sensor values */
@@ -189,8 +197,9 @@ public:
 	}
 
 private:
-	bool joystickButton6DBounce = false;
-	bool joystickButton8DBounce = false;
+	bool joystickButton0DBounce = false;
+	bool joystickButton1DBounce = false;
+	bool joystickButton2DBounce = false;
 };
 
 START_ROBOT_CLASS(Robot)

@@ -85,23 +85,14 @@ public:
 				);
 		frc::SmartDashboard::PutNumber("Amps",
 				((leftDrive->GetOutputCurrent() + rightDrive->GetOutputCurrent()) / 2)
-				);
-
+3333333
 		/* drive robot */
 		robotDrive->ArcadeDrive(forw, turn, false);
 		
 		/* lift/lower lifter */
-		if (joystick->GetRawButton(0) && !joystickButton0DBounce) {
-			joystickButton0DBounce = true;
-			lifter.Toggle();
-		} else if (!joystick->GetRawButton(0)) {
-			joystickButton0DBounce = false;
-		}
-
-		/* close/open grabber */
 		if (joystick->GetRawButton(1) && !joystickButton1DBounce) {
 			joystickButton1DBounce = true;
-			claw.Toggle();
+			lifter.Toggle();
 		} else if (!joystick->GetRawButton(1)) {
 			joystickButton1DBounce = false;
 		}
@@ -112,6 +103,14 @@ public:
 			claw.Toggle();
 		} else if (!joystick->GetRawButton(2)) {
 			joystickButton2DBounce = false;
+		}
+
+		/* close/open grabber */
+		if (joystick->GetRawButton(3) && !joystickButton3DBounce) {
+			joystickButton3DBounce = true;
+			claw.Toggle();
+		} else if (!joystick->GetRawButton(3)) {
+			joystickButton3DBounce = false;
 		}
 
 		/* get sensor values */
@@ -197,9 +196,9 @@ public:
 	}
 
 private:
-	bool joystickButton0DBounce = false;
 	bool joystickButton1DBounce = false;
 	bool joystickButton2DBounce = false;
+	bool joystickButton3DBounce = false;
 };
 
 START_ROBOT_CLASS(Robot)

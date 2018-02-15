@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <string>
+#include <stack>
 
 #include <LiveWindow/LiveWindow.h>
 #include <SmartDashboard/SendableChooser.h>
@@ -76,7 +77,7 @@ public:
 		autoDelayNo = "Do Not Delay 5 Seconds";
 
 	void DisabledInit() {
-		robotDrive->ArcadeDrive(0, 0, false);
+		robotDrive.ArcadeDrive(0, 0, false);
 	}
 	void DisabledPeriodic() {}
 
@@ -144,7 +145,7 @@ public:
 		std::cout << "Gyro Angle:" << imu.GetAngle();
 	}
 
-	void AutonomousInit() {
+	void PidDrive(int targetPosition) {
 		// Disabling Safety
 		robotDrive.SetSafetyEnabled(false);
 
@@ -160,17 +161,15 @@ public:
 		rightDrive.Config_kI(0, 0, Constants.kTimeoutMs);
 		rightDrive.Config_kD(0, 0, Constants.kTimeoutMs);
 
-		// Setting PID paramaters
-		leftDrive->SelectProfileSlot(0, 0);
-		leftDrive->Config_kF(0, 0.2, 0);
-		leftDrive->Config_kP(0, 0.2, 0);
-		leftDrive->Config_kI(0, 0, 0);
-		leftDrive->Config_kD(0, 0, 0);
-		rightDrive->SelectProfileSlot(0, 0);
-		rightDrive->Config_kF(0, 0.2, 0);
-		rightDrive->Config_kP(0, 0.2, 0);
-		rightDrive->Config_kI(0, 0, 0);
-		rightDrive->Config_kD(0, 0, 0);
+		// ToDo: Implement PidDrive
+		// Drive to targetPosition + currentPosition
+	}
+
+	void AutonomousInit() {
+		// Disabling Safety
+		robotDrive.SetSafetyEnabled(false);
+
+		while (!autoActions.empty()) { autoActions.pop(); }
 
 		// Collect Options
 		std::string targets = frc::DriverStation::GetInstance().GetGameSpecificMessage();
@@ -199,6 +198,14 @@ public:
 					<< "Driving 6ft\n"
 					<< "Turning Right 90 degrees\n"
 					<< "Dropping cube\n";
+				// Stack actions, in reverse
+				autoActions.push(AUTO_DROP_CUBE);
+				autoActions.push(AUTO_TURN_RIGHT);
+				autoActions.push(AUTO_DRIVE_6FT);
+				autoActions.push(AUTO_TURN_RIGHT);
+				autoActions.push(AUTO_DRIVE_8FT);
+				autoActions.push(AUTO_TURN_LEFT);
+				autoActions.push(AUTO_DRIVE_6FT);
 			} else if (optionDrop == autoDropYes && optionTarget == 'R') {
 				std::cout << "Dropping on the switch's Right\n"
 					<< "Driving 6ft\n"
@@ -240,6 +247,44 @@ public:
 	}
 
 	void AutonomousPeriodic() {
+		if ((leftDrive.GetMotorOutputPercent() == 0) &&
+				(rightDrive.GetMotorOutputPercent() == 0)) {
+
+			int action = autoActions.top();
+			autoActions.pop();
+			switch (action) {
+			case AUTO_DRIVE_6FT:
+				PidDrive(PID_POSITION_6FT);
+				frc::Wait(1);
+				break;
+			case AUTO_DRIVE_8FT:
+				PidDrive(PID_POSITION_8FT);
+				frc::Wait(1);
+				break;
+			case AUTO_DRIVE_12FT:
+				PidDrive(PID_POSITION_12FT);
+				frc::Wait(1);
+				break;
+			case AUTO_DRIVE_17FT:
+				PidDrive(PID_POSITION_17FT);
+				frc::Wait(1);
+				break;
+
+			case AUTO_TURN_LEFT:
+				// ToDo Impliment Turn Left
+				break;
+			case AUTO_TURN_RIGHT:
+				//ToDo Impliment Turn Right
+				break;
+
+			case AUTO_DROP_CUBE:
+				claw.Fire();
+				break;
+
+			default:
+				llvm::outs() << "Invalid Autonomous action detected! Skipping...\n";
+			}
+		}
 	}
 
 	void RobotInit() {
@@ -277,6 +322,7 @@ private:
 	bool joystickButton1DBounce = false;
 	bool joystickButton2DBounce = false;
 	bool joystickButton3DBounce = false;
+	std::stack<int> autoActions;
 };
 
 START_ROBOT_CLASS(Robot)

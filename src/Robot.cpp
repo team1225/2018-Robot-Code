@@ -82,6 +82,11 @@ public:
 		autoDelayYes = "Delay 5 sec",
 		autoDelayNo = "Do Not Delay 5 Seconds";
 
+	void DisabledInit() {
+		robotDrive->ArcadeDrive(0, 0, false);
+	}
+	void DisabledPeriodic() {}
+
 	void TeleopInit() {
 		robotDrive.SetSafetyEnabled(true);
 

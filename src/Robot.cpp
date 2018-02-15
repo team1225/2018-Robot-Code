@@ -169,11 +169,15 @@ public:
 		leftDrive.Config_kP(0, 0.2, 0);
 		leftDrive.Config_kI(0, 0, 0);
 		leftDrive.Config_kD(0, 0, 0);
+		leftDrive.Config_IntegralZone(0, 100, 0);
+		leftDrive.ConfigAllowableClosedloopError(0, PID_ALLOWABLE_ERROR, 0);
 		rightDrive.SelectProfileSlot(0, 0);
 		rightDrive.Config_kF(0, 0.2, 0);
 		rightDrive.Config_kP(0, 0.2, 0);
 		rightDrive.Config_kI(0, 0, 0);
 		rightDrive.Config_kD(0, 0, 0);
+		rightDrive.Config_IntegralZone(0, 100, 0);
+		rightDrive.ConfigAllowableClosedloopError(0, PID_ALLOWABLE_ERROR, 0);
 
 		// ToDo: Implement PidDrive
 		// Drive to targetPosition + currentPosition

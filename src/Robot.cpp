@@ -178,16 +178,16 @@ public:
 		rightDrive.Config_kD(0, 0, 0);
 
 		// Setting PID paramaters
-		leftDrive->selectProfileSlot(0, 0);
-		leftDrive->Config_kF(0, 0.2, Constants.kTimeoutMs);
-		leftDrive->Config_kP(0, 0.2, Constants.kTimeoutMs);
-		leftDrive->Config_kI(0, 0, Constants.kTimeoutMs);
-		leftDrive->Config_kD(0, 0, Constants.kTimeoutMs);
-		rightDrive->selectProfileSlot(0, 0);
-		rightDrive->Config_kF(0, 0.2, Constants.kTimeoutMs);
-		rightDrive->Config_kP(0, 0.2, Constants.kTimeoutMs);
-		rightDrive->Config_kI(0, 0, Constants.kTimeoutMs);
-		rightDrive->Config_kD(0, 0, Constants.kTimeoutMs);
+		leftDrive->SelectProfileSlot(0, 0);
+		leftDrive->Config_kF(0, 0.2, 0);
+		leftDrive->Config_kP(0, 0.2, 0);
+		leftDrive->Config_kI(0, 0, 0);
+		leftDrive->Config_kD(0, 0, 0);
+		rightDrive->SelectProfileSlot(0, 0);
+		rightDrive->Config_kF(0, 0.2, 0);
+		rightDrive->Config_kP(0, 0.2, 0);
+		rightDrive->Config_kI(0, 0, 0);
+		rightDrive->Config_kD(0, 0, 0);
 
 		// Collect Options
 		std::string targets = frc::DriverStation::GetInstance().GetGameSpecificMessage();

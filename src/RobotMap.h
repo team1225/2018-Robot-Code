@@ -39,4 +39,26 @@
 #define LIFTER_UP true
 #define LIFTER_DOWN false
 
+/* Define Auto actions */
+
+#define AUTO_DRIVE_6FT 00
+#define AUTO_DRIVE_8FT 01
+#define AUTO_DRIVE_12FT 02
+#define AUTO_DRIVE_17FT 03
+
+#define AUTO_TURN_LEFT 10
+#define AUTO_TURN_RIGHT 11
+
+#define AUTO_DROP_CUBE 20
+
+/* Define Constraints */
+
+#define PID_POSITION_6FT 3000
+#define PID_POSITION_8FT 3000
+#define PID_POSITION_12FT 3000
+#define PID_POSITION_17FT 3000
+
+#define PID_ALLOWABLE_ERROR 400
+
+
 #endif /* SRC_ROBOTMAP_H_ */

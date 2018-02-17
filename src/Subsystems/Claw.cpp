@@ -1,3 +1,10 @@
+/*----------------------------------------------------------------------------*/
+/* Copyright (c) 2017-2018 Team 1225. All Rights Reserved.                    */
+/* Open Source Software - may be modified and shared by FRC teams. The code   */
+/* must be accompanied by the FIRST BSD license file in the root directory of */
+/* the project.                                                               */
+/*----------------------------------------------------------------------------*/
+
 #include "Claw.h"
 #include "../RobotMap.h"
 
@@ -8,20 +15,21 @@ Claw::Claw(
 		int clawForwardChannel, int clawReverseChannel,
 		int leftRamForwardChannel, int leftRamReverseChannel,
 		int rightRamForwardChannel, int rightRamReverseChannel
-		): Subsystem("ExampleSubsystem") {
-	theClaw = new DoubleSolenoid(clawForwardChannel, clawReverseChannel);
-	leftRam = new DoubleSolenoid(leftRamForwardChannel, leftRamReverseChannel);
-	rightRam = new DoubleSolenoid(rightRamForwardChannel, rightRamReverseChannel);
+		) :
+		Subsystem("ExampleSubsystem"),
+		theClaw {clawForwardChannel, clawReverseChannel},
+		leftRam {leftRamForwardChannel, leftRamReverseChannel},
+		rightRam {rightRamForwardChannel, rightRamReverseChannel} {
 	this->Open();
 	this->PullRam();
 }
 
 void Claw::Open() {
-	theClaw->Set(DoubleSolenoid::kReverse);
+	theClaw.Set(DoubleSolenoid::kReverse);
 }
 
 void Claw::Close() {
-	theClaw->Set(DoubleSolenoid::kForward);
+	theClaw.Set(DoubleSolenoid::kForward);
 }
 
 void Claw::Toggle() {
@@ -37,13 +45,13 @@ void Claw::Toggle() {
 }
 
 void Claw::PushRam() {
-	leftRam->Set(DoubleSolenoid::kForward);
-	rightRam->Set(DoubleSolenoid::kForward);
+	leftRam.Set(DoubleSolenoid::kForward);
+	rightRam.Set(DoubleSolenoid::kForward);
 }
 
 void Claw::PullRam() {
-	leftRam->Set(DoubleSolenoid::kReverse);
-	rightRam->Set(DoubleSolenoid::kReverse);
+	leftRam.Set(DoubleSolenoid::kReverse);
+	rightRam.Set(DoubleSolenoid::kReverse);
 }
 
 void Claw::Fire() {
@@ -54,14 +62,14 @@ void Claw::Fire() {
 }
 
 bool Claw::GetPosition() {
-	if (theClaw->Get() == DoubleSolenoid::kForward) {
+	if (theClaw.Get() == DoubleSolenoid::kForward) {
 			return CLAW_CLOSED;
 		}
-		else if (theClaw->Get() == DoubleSolenoid::kReverse) {
+		else if (theClaw.Get() == DoubleSolenoid::kReverse) {
 			return CLAW_OPEN;
 		}
 		else {
-			theClaw->Set(DoubleSolenoid::kReverse);
+			theClaw.Set(DoubleSolenoid::kReverse);
 			return CLAW_CLOSED;
 		}
 }

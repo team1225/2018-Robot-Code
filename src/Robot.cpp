@@ -179,8 +179,44 @@ public:
 		rightDrive.Config_IntegralZone(0, 100, 0);
 		rightDrive.ConfigAllowableClosedloopError(0, PID_ALLOWABLE_ERROR, 0);
 
-		// ToDo: Implement PidDrive
-		// Drive to targetPosition + currentPosition
+		leftDrive.Set(ctre::phoenix::motorcontrol::ControlMode::Position,
+				targetPosition);
+		rightDrive.Set(ctre::phoenix::motorcontrol::ControlMode::Position,
+				targetPosition);
+
+		while (
+				!((leftDrive.Get() == 0) && (rightDrive.Get() == 0))
+				&& IsEnabled() && IsAutonomous()
+				) {
+			frc::Wait(0.01);
+		}
+	}
+
+	void PidTurn(int targetAngle) {
+		double allowableError = 5, period = 0.01;
+		float P = 0, I = 0, D = 0, effort,
+				currentAngle, error, errorLast=targetAngle;
+		gyro.Reset();
+		while (currentAngle = gyro.GetAngle(),
+				((currentAngle >=targetAngle-allowableError)
+				|| (currentAngle >=targetAngle+allowableError))
+				&& IsEnabled() && IsAutonomous()
+				) {
+			error=(currentAngle-targetAngle);
+			P = (error-allowableError);
+			I += error * period;
+			D = (error-errorLast)/period;
+			errorLast = error;
+
+			effort = PID_TURN_KF * (
+					PID_TURN_KP * P +
+					PID_TURN_KI * I +
+					PID_TURN_KD * D
+					);
+
+			robotDrive.ArcadeDrive(0, effort);
+			frc::Wait(period);
+		}
 	}
 
 	void AutonomousInit() {
@@ -265,43 +301,36 @@ public:
 	}
 
 	void AutonomousPeriodic() {
-		if ((leftDrive.GetMotorOutputPercent() == 0) &&
-				(rightDrive.GetMotorOutputPercent() == 0)) {
+		int action = autoActions.top();
+		autoActions.pop();
+		switch (action) {
+		case AUTO_DRIVE_6FT:
+			PidDrive(PID_POSITION_6FT);
+			break;
+		case AUTO_DRIVE_8FT:
+			PidDrive(PID_POSITION_8FT);
+			break;
+		case AUTO_DRIVE_12FT:
+			PidDrive(PID_POSITION_12FT);
+			break;
+		case AUTO_DRIVE_17FT:
+			PidDrive(PID_POSITION_17FT);
+			break;
 
-			int action = autoActions.top();
-			autoActions.pop();
-			switch (action) {
-			case AUTO_DRIVE_6FT:
-				PidDrive(PID_POSITION_6FT);
-				frc::Wait(1);
-				break;
-			case AUTO_DRIVE_8FT:
-				PidDrive(PID_POSITION_8FT);
-				frc::Wait(1);
-				break;
-			case AUTO_DRIVE_12FT:
-				PidDrive(PID_POSITION_12FT);
-				frc::Wait(1);
-				break;
-			case AUTO_DRIVE_17FT:
-				PidDrive(PID_POSITION_17FT);
-				frc::Wait(1);
-				break;
+		case AUTO_TURN_LEFT:
+			PidTurn(PID_TURN_LEFT);
+			frc::Wait(1);
+			break;
+		case AUTO_TURN_RIGHT:
+			PidTurn(PID_TURN_RIGHT);
+			break;
 
-			case AUTO_TURN_LEFT:
-				// ToDo Impliment Turn Left
-				break;
-			case AUTO_TURN_RIGHT:
-				//ToDo Impliment Turn Right
-				break;
+		case AUTO_DROP_CUBE:
+			claw.Fire();
+			break;
 
-			case AUTO_DROP_CUBE:
-				claw.Fire();
-				break;
-
-			default:
-				llvm::outs() << "Invalid Autonomous action detected! Skipping...\n";
-			}
+		default:
+			llvm::outs() << "Invalid Autonomous action detected! Skipping...\n";
 		}
 	}
 

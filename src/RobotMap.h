@@ -47,10 +47,21 @@
 
 /* Define Constraints */
 
+#define PID_DRIVE_KF 0.2
+#define PID_DRIVE_KP 0.2
+#define PID_DRIVE_KI 0
+#define PID_DRIVE_KD 0
 #define PID_POSITION_6FT 3000
 #define PID_POSITION_8FT 3000
 #define PID_POSITION_12FT 3000
 #define PID_POSITION_17FT 3000
+
+#define PID_TURN_KF 0.2
+#define PID_TURN_KP 0.2
+#define PID_TURN_KI 0
+#define PID_TURN_KD 0
+#define PID_TURN_LEFT -270
+#define PID_TURN_RIGHT 90
 
 #define PID_ALLOWABLE_ERROR 400
 

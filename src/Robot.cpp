@@ -103,6 +103,7 @@ public:
 		frc::SmartDashboard::PutNumber("Amps",\
 			((leftDrive.GetOutputCurrent() + rightDrive.GetOutputCurrent()) / 2)
 		);
+
 		/* drive robot */
 		robotDrive.ArcadeDrive(forw, turn, false);
 		
@@ -270,6 +271,7 @@ public:
 			}
 		} else if (optionStart == pos3) {
 			if (optionTarget == 'R' && optionDrop == autoDropYes) {
+
 				std::cout << "Dropping from the same side, Right\n"
 					<< "Driving 14ft\n"
 					<< "Turning Left 90 degrees\n"
@@ -347,6 +349,7 @@ public:
 
 		// Calibrate Gyro
 		imu.Calibrate();
+
 	}
 
 private:

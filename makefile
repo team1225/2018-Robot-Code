@@ -1,4 +1,4 @@
-Debug/FRCUserProgram : Debug/src/Robot.o Debug/src/Subsystems/Claw.o Debug/src/Subsystems/Lifter.o
+Debug/FRCUserProgram : Debug/src/Robot.o Debug/src/ADIS16448_IMU/ADIS16448_IMU.o Debug/src/Subsystems/Claw.o Debug/src/Subsystems/Lifter.o
 	arm-frc-linux-gnueabi-g++ \
 		-L/home/blasting/wpilib/common/current/lib/linux/athena/shared \
 		-L/usr/arm-frc-linux-gnueabi/lib \
@@ -6,6 +6,7 @@ Debug/FRCUserProgram : Debug/src/Robot.o Debug/src/Subsystems/Claw.o Debug/src/S
 		-L/home/blasting/wpilib/user/cpp/lib -pthread -rdynamic \
 		-Wl,-rpath,/opt/GenICam_v3_0_NI/bin/Linux32_ARM,-rpath,/usr/local/frc/lib \
 		-o Debug/FRCUserProgram \
+		Debug/src/ADIS16448_IMU/ADIS16448_IMU.o \
 		Debug/src/Robot.o Debug/src/Subsystems/Claw.o Debug/src/Subsystems/Lifter.o \
 		-lCTRE_Phoenix -lCTRE_PhoenixCCI -lwpi
 
@@ -18,6 +19,16 @@ Debug/src/Robot.o : src/Robot.cpp
 		-I/home/blasting/wpilib/user/cpp/include \
 		-O0 -Og -g3 -Wall -c -fmessage-length=0 -pthread \
 		-o Debug/src/Robot.o src/Robot.cpp
+
+Debug/src/ADIS16448_IMU/ADIS16448_IMU.o : src/ADIS16448_IMU/ADIS16448_IMU.cpp src/ADIS16448_IMU/ADIS16448_IMU.h
+	mkdir -p Debug/src/ADIS16448_IMU
+	arm-frc-linux-gnueabi-g++ \
+		-std=c++1y \
+		-I/home/blasting/wpilib/cpp/current/include \
+		-I/home/blasting/build/FRC_Workspace/Timed-CAN-DiffDrive--2018/src \
+		-I/home/blasting/wpilib/user/cpp/include \
+		-O0 -Og -g3 -Wall -c -fmessage-length=0 -pthread \
+		-o Debug/src/ADIS16448_IMU/ADIS16448_IMU.o src/ADIS16448_IMU/ADIS16448_IMU.cpp
 
 Debug/src/Subsystems/Claw.o : src/Subsystems/Claw.cpp
 	mkdir -p Debug/src/Subsystems

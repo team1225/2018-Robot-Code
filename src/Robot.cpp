@@ -19,6 +19,7 @@
 #include <AnalogGyro.h>
 #include <Commands/Command.h>
 #include <Commands/Scheduler.h>
+#include "ADIS16448_IMU/ADIS16448_IMU.h"
 #include "RobotMap.h"
 
 #include "Subsystems/Claw.h"
@@ -48,7 +49,7 @@ public:
 			rightDrive
 	};
 
-	AnalogGyro gyro{1};
+	ADIS16448_IMU imu;
 
 	Claw claw{
 		CLAW_FWD_CHANNEL, CLAW_BWD_CHANNEL,
@@ -130,7 +131,7 @@ public:
 		}
 
 		// output gyro angle
-		std::cout << "Gyro Angle:" << gyro.GetAngle();
+		std::cout << "Gyro Angle:" << imu.GetAngle();
 	}
 
 	void AutonomousInit() {
@@ -162,7 +163,7 @@ public:
 		autoDelay.AddObject(autoDelayYes, autoDelayYes);
 
 		// Calibrate Gyro
-		gyro.Calibrate();
+		imu.Calibrate();
 	}
 
 private:

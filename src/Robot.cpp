@@ -102,6 +102,7 @@ public:
 		frc::SmartDashboard::PutNumber("Amps",\
 			((leftDrive.GetOutputCurrent() + rightDrive.GetOutputCurrent()) / 2)
 		);
+
 		/* drive robot */
 		robotDrive.ArcadeDrive(forw, turn, false);
 		

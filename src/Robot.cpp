@@ -15,6 +15,7 @@
 #include <DriverStation.h>
 #include <TimedRobot.h>
 #include <ctre/Phoenix.h>
+#include <DriverStation.h>
 #include <Drive/DifferentialDrive.h>
 #include <Joystick.h>
 #include <Timer.h>

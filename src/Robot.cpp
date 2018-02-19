@@ -249,7 +249,12 @@ public:
 		std::string optionDelayLeft = autoDelayLeft.GetSelected();
 		std::string optionDelayRight = autoDelayRight.GetSelected();
 		// Output to console, for debugging
-// Todo: replace		std::cout << "Switch target is " << optionTarget << " from " << targets << "\n";
+		if (switchTarget == SWITCH_TARGET_LEFT){
+			std::cout << "Switch target is Left from " << targets << "/n";
+		}
+		else {
+			std::cout << "Switch target is Right from " << targets << "/n";
+		}
 		std::cout << "Starting from " << optionStart << "\n";
 		std::cout << "Power Cube Drop Left? " << optionDropLeft << "\n";
 		std::cout << "Power Cube Drop Right? " << optionDropRight << "\n";

@@ -39,6 +39,9 @@
 #define LIFTER_UP true
 #define LIFTER_DOWN false
 
+#define SWITCH_TARGET_LEFT true
+#define SWITCH_TARGET_RIGHT false
+
 /* Define Auto actions */
 
 #define AUTO_DRIVE_6FT 00

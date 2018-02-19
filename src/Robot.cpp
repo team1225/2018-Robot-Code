@@ -253,9 +253,17 @@ public:
 					<< "Driving 6ft\n"
 					<< "Turning Left 90 degrees\n"
 					<< "Dropping cube\n";
+				autoActions.push(AUTO_DROP_CUBE);
+				autoActions.push(AUTO_TURN_LEFT);
+				autoActions.push(AUTO_DRIVE_6FT);
+				autoActions.push(AUTO_TURN_LEFT);
+				autoActions.push(AUTO_DRIVE_8FT);
+				autoActions.push(AUTO_TURN_RIGHT);
+				autoActions.push(AUTO_DRIVE_6FT);
 			} else if (optionDrop == autoDropNo) {
 				std::cout << "Not dropping, crossing auto line\n"
 					<< "Driving 12 ft\n";
+				autoActions.push(AUTO_DRIVE_12FT);
 			}
 		} else if (optionStart == pos1) {
 			if (optionTarget == 'L' && optionDrop == autoDropYes) {
@@ -264,23 +272,34 @@ public:
 					<< "Turning Right 90 degrees\n"
 					<< "Dropping cube\n"
 					<< "Backing up\n";
+				autoActions.push(AUTO_DRIVE_BACKUP);
+				autoActions.push(AUTO_DROP_CUBE);
+				autoActions.push(AUTO_TURN_RIGHT);
+				autoActions.push(AUTO_DRIVE_14FT);
 			} else if (optionTarget == 'R' || optionDrop == autoDropNo) {
 				std::cout << "Not dropping, driving past switch\n"
 					<< "Driving 17ft\n"
 					<< "Turning right 90 degrees\n";
+				autoActions.push(AUTO_TURN_RIGHT);
+				autoActions.push(AUTO_DRIVE_17FT);
 			}
 		} else if (optionStart == pos3) {
 			if (optionTarget == 'R' && optionDrop == autoDropYes) {
-
 				std::cout << "Dropping from the same side, Right\n"
 					<< "Driving 14ft\n"
 					<< "Turning Left 90 degrees\n"
 					<< "Dropping cube\n"
 					<< "Backing up\n";
+				autoActions.push(AUTO_DRIVE_BACKUP);
+				autoActions.push(AUTO_DROP_CUBE);
+				autoActions.push(AUTO_TURN_LEFT);
+				autoActions.push(AUTO_DRIVE_14FT);
 			} else if (optionTarget == 'L' || optionDrop == autoDropNo) {
 				std::cout << "Not dropping, driving past switch\n"
 					<< "Driving 17ft\n"
 					<< "Turning Left 90 degrees\n";
+				autoActions.push(AUTO_TURN_LEFT);
+				autoActions.push(AUTO_DRIVE_17FT);
 			}
 		}
 	}

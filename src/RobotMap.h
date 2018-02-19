@@ -33,6 +33,9 @@
 #define LIFTER_UP true
 #define LIFTER_DOWN false
 
+#define SWITCH_TARGET_LEFT true
+#define SWITCH_TARGET_RIGHT false
+
 /* Define Auto actions */
 
 #define AUTO_DRIVE_6FT 00
@@ -57,6 +60,7 @@
 #define PID_POSITION_6FT 3000
 #define PID_POSITION_8FT 3000
 #define PID_POSITION_12FT 3000
+#define PID_POSITION_14FT 3000
 #define PID_POSITION_17FT 3000
 
 #define PID_TURN_KF 0.2

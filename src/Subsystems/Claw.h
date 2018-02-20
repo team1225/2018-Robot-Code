@@ -22,6 +22,7 @@ private:
 
 public:
 	Claw(
+			int pcmId,
 			int clawForwardChannel, int clawReverseChannel,
 			int leftRamForwardChannel, int leftRamReverseChannel,
 			int rightRamForwardChannel, int rightRamReverseChannel

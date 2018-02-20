@@ -12,14 +12,15 @@
 #include <Timer.h>
 
 Claw::Claw(
+		int pcmId,
 		int clawForwardChannel, int clawReverseChannel,
 		int leftRamForwardChannel, int leftRamReverseChannel,
 		int rightRamForwardChannel, int rightRamReverseChannel
 		) :
 		Subsystem("ExampleSubsystem"),
-		theClaw {clawForwardChannel, clawReverseChannel},
-		leftRam {leftRamForwardChannel, leftRamReverseChannel},
-		rightRam {rightRamForwardChannel, rightRamReverseChannel} {
+		theClaw {pcmId, clawForwardChannel, clawReverseChannel},
+		leftRam {pcmId, leftRamForwardChannel, leftRamReverseChannel},
+		rightRam {pcmId, rightRamForwardChannel, rightRamReverseChannel} {
 	this->Open();
 	this->PullRam();
 }

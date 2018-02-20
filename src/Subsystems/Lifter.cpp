@@ -11,9 +11,9 @@
 #include <DoubleSolenoid.h>
 #include <Timer.h>
 
-Lifter::Lifter(int forwardChannel, int reverseChannel) :
+Lifter::Lifter(int pcmId, int forwardChannel, int reverseChannel) :
 	Subsystem("ExampleSubsystem"),
-	theLifter{forwardChannel, reverseChannel} {
+	theLifter{pcmId, forwardChannel, reverseChannel} {
 	this->SolonoidInit();
 }
 

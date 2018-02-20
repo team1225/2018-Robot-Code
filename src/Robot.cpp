@@ -52,11 +52,18 @@ public:
 	ADIS16448_IMU imu;
 
 	Claw claw{
+		PCM_ARM,
 		CLAW_FWD_CHANNEL, CLAW_BWD_CHANNEL,
 		LEFT_RAM_FWD_CHANNEL, LEFT_RAM_BWD_CHANNEL,
 		RIGHT_RAM_FWD_CHANNEL, RIGHT_RAM_BWD_CHANNEL
 	};
-	Lifter lifter{LIFTER_FWD_CHANNEL, LIFTER_BWD_CHANNEL};
+	Lifter arm{
+		PCM_ARM,
+		ARM_FWD_CHANNEL, ARM_BWD_CHANNEL};
+	Lifter lift{
+		PCM_BODY,
+		LIFT_FWD_CHANNEL, ARM_BWD_CHANNEL
+	};
 
 	Joystick joystick{0};
 
@@ -95,12 +102,20 @@ public:
 		/* drive robot */
 		robotDrive.ArcadeDrive(forw, turn, false);
 		
-		/* lift/lower lifter */
+		/* lift/lower arm */
 		if (joystick.GetRawButton(1) && !joystickButton1DBounce) {
 			joystickButton1DBounce = true;
-			lifter.Toggle();
+			arm.Toggle();
 		} else if (!joystick.GetRawButton(1)) {
 			joystickButton1DBounce = false;
+		}
+
+		/* lift/drop lift */
+		if (joystick.GetRawButton(4) && !joystickButton4DBounce) {
+			joystickButton4DBounce = true;
+			lift.Toggle();
+		} else if (!joystick.GetRawButton(4)) {
+			joystickButton4DBounce = false;
 		}
 
 		/* close/open grabber */
@@ -170,6 +185,7 @@ private:
 	bool joystickButton1DBounce = false;
 	bool joystickButton2DBounce = false;
 	bool joystickButton3DBounce = false;
+	bool joystickButton4DBounce = false;
 };
 
 START_ROBOT_CLASS(Robot)

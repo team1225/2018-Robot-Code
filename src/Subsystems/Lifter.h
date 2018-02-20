@@ -18,7 +18,9 @@ private:
 	void SolonoidInit();
 
 public:
-	Lifter(int forwardChannel, int reverseChannel);
+	Lifter(
+			int pcmId,
+			int forwardChannel, int reverseChannel);
 	void Lift();
 	void Drop();
 	void Toggle();

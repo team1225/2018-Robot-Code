@@ -427,6 +427,7 @@ public:
 
 		// Calibrate Gyro
 		imu.Calibrate();
+
 	}
 
 private:

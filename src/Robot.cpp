@@ -65,7 +65,7 @@ public:
 		ARM_FWD_CHANNEL, ARM_BWD_CHANNEL};
 	Lifter lift{
 		PCM_BODY,
-		LIFT_FWD_CHANNEL, ARM_BWD_CHANNEL
+		LIFT_FWD_CHANNEL, LIFT_BWD_CHANNEL
 	};
 
 	Joystick joystick{0};
@@ -427,6 +427,7 @@ public:
 
 		// Calibrate Gyro
 		imu.Calibrate();
+
 	}
 
 private:

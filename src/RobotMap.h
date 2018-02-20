@@ -30,7 +30,6 @@
 #define RIGHT_RAM_FWD_CHANNEL 6
 #define RIGHT_RAM_BWD_CHANNEL 7
 
-
 /* Define global macros */
 
 #define CLAW_OPEN false

@@ -173,36 +173,6 @@ public:
 		std::cout << "Gyro Angle:" << imu.GetAngle();
 	}
 
-/*	void PidDrive(int targetPosition) {
-		// Setting PID paramaters
-		leftDrive.SelectProfileSlot(0, 0);
-		leftDrive.Config_kF(0, 0.2, 0);
-		leftDrive.Config_kP(0, 0.2, 0);
-		leftDrive.Config_kI(0, 0, 0);
-		leftDrive.Config_kD(0, 0, 0);
-		leftDrive.Config_IntegralZone(0, 100, 0);
-		leftDrive.ConfigAllowableClosedloopError(0, PID_ALLOWABLE_ERROR, 0);
-		rightDrive.SelectProfileSlot(0, 0);
-		rightDrive.Config_kF(0, 0.2, 0);
-		rightDrive.Config_kP(0, 0.2, 0);
-		rightDrive.Config_kI(0, 0, 0);
-		rightDrive.Config_kD(0, 0, 0);
-		rightDrive.Config_IntegralZone(0, 100, 0);
-		rightDrive.ConfigAllowableClosedloopError(0, PID_ALLOWABLE_ERROR, 0);
-
-		leftDrive.Set(ctre::phoenix::motorcontrol::ControlMode::Position,
-				targetPosition);
-		rightDrive.Set(ctre::phoenix::motorcontrol::ControlMode::Position,
-				targetPosition);
-
-		while (
-				!((leftDrive.Get() == 0) && (rightDrive.Get() == 0))
-				&& IsEnabled() && IsAutonomous()
-				) {
-			frc::Wait(0.01);
-		}
-	}*/
-
 	void PidDrive(int targetPosition) {
 		double allowableError = PID_ALLOWABLE_ERROR, period = 0.05, currentPosition,
 				startingPosition = (leftDrive.GetSelectedSensorPosition(0) + rightDrive.GetSelectedSensorPosition(0))/2,

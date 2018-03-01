@@ -24,7 +24,6 @@
 #include <Commands/Command.h>
 #include <Commands/Scheduler.h>
 #include "ADIS16448_IMU/ADIS16448_IMU.h"
-#include "MiniPID/MiniPID.h"
 #include "RobotMap.h"
 
 #include "Subsystems/Claw.h"
@@ -173,44 +172,28 @@ public:
 		std::cout << "Gyro Angle:" << imu.GetAngle();
 	}
 
-	void PidDrive(int targetPosition) {
-		double allowableError = PID_ALLOWABLE_ERROR, period = 0.05, currentPosition,
-			startingPosition = (leftDrive.GetSelectedSensorPosition(0) + rightDrive.GetSelectedSensorPosition(0))/2,
-			targetAngle = 0, currentAngle,
-			effortDrive, effortTurn;
+	void AutoDrive(int targetPosition) {
+		double currentPosition = ((leftDrive.GetSelectedSensorPosition(0) + rightDrive.GetSelectedSensorPosition(0))/2),
+			period = 0.05, effortDrive = 0.30, kP_turn = 0.20, currentAngle,
+			startingPosition = currentPosition;
 		targetPosition = targetPosition + startingPosition;
-		pidTurn.reset();
-		pidDrive.reset();
 		imu.Reset();
-		while (
-			currentPosition = 
-				(leftDrive.GetSelectedSensorPosition(0) + 
-				rightDrive.GetSelectedSensorPosition(0))/2,
-			currentAngle = imu.GetAngle(),
-			((currentPosition >= targetPosition-allowableError)
-				&& (currentPosition <= targetPosition+allowableError))
-				&& IsEnabled() && IsAutonomous()
-		) {
-			effortTurn = pidTurn.getOutput(currentAngle, targetAngle);
-			effortDrive = pidDrive.getOutput(currentPosition, targetPosition);
+		while ((currentPosition >= targetPosition) && IsEnabled() && IsAutonomous()) {
+			currentPosition = ((leftDrive.GetSelectedSensorPosition(0) +
+						rightDrive.GetSelectedSensorPosition(0))/2);
+			currentAngle = imu.GetAngle();
 
-			robotDrive.ArcadeDrive(effortDrive, effortTurn);
+			robotDrive.ArcadeDrive(effortDrive, -(currentAngle * kP_turn));
 			frc::Wait(period);
 		}
 		robotDrive.ArcadeDrive(0, 0);
 	}
 
-	void PidTurn(int targetAngle) {
-		double allowableError = 5, period = 0.05, currentAngle, effortTurn;
-		pidTurn.reset();
+	void AutoTurn(int targetAngle) {
+		double period = 0.05, currentAngle = imu.GetAngle(), effortTurn = 0.20;
 		imu.Reset();
-		while (
-			currentAngle = imu.GetAngle(),
-			((currentAngle >= targetAngle-allowableError)
-				&& (currentAngle <= targetAngle+allowableError))
-				&& IsEnabled() && IsAutonomous()
-		) {
-			effortTurn = pidTurn.getOutput(currentAngle, targetAngle);
+		while ((currentAngle >= targetAngle) && IsEnabled() && IsAutonomous()) {
+			currentAngle = imu.GetAngle();
 			robotDrive.ArcadeDrive(0, effortTurn);
 			frc::Wait(period);
 		}
@@ -341,33 +324,33 @@ public:
 		switch (action) {
 		case AutoActionTags::Drive6ft:
 			std::cout << "Driving 6 feet with PID\n";
-			PidDrive(PID_POSITION_6FT);
+			AutoDrive(PID_POSITION_6FT);
 			break;
 		case AutoActionTags::Drive8ft:
 			std::cout << "Driving 8 feet with PID\n";
-			PidDrive(PID_POSITION_8FT);
+			AutoDrive(PID_POSITION_8FT);
 			break;
 		case AutoActionTags::Drive12ft:
 			std::cout << "Driving 12 feet with PID\n";
-			PidDrive(PID_POSITION_12FT);
+			AutoDrive(PID_POSITION_12FT);
 			break;
 		case AutoActionTags::Drive14ft:
 			std::cout << "Driving 14 feet with PID\n";
-			PidDrive(PID_POSITION_14FT);
+			AutoDrive(PID_POSITION_14FT);
 			break;
 		case AutoActionTags::Drive17ft:
 			std::cout << "Driving 17 feet with PID\n";
-			PidDrive(PID_POSITION_17FT);
+			AutoDrive(PID_POSITION_17FT);
 			break;
 
 		case AutoActionTags::TurnLeft:
 			std::cout << "Turning left with PID\n";
-			PidTurn(PID_TURN_LEFT);
+			AutoTurn(PID_TURN_LEFT);
 			frc::Wait(1);
 			break;
 		case AutoActionTags::TurnRight:
 			std::cout << "Turning right with PID\n";
-			PidTurn(PID_TURN_RIGHT);
+			AutoTurn(PID_TURN_RIGHT);
 			break;
 
 		case AutoActionTags::DropCube:
@@ -393,10 +376,6 @@ public:
 
 		// And Safety Expiration
 		robotDrive.SetExpiration(0.05);
-
-		// Set PID output to -1 to 1
-		pidTurn.setOutputLimits(1);
-		pidDrive.setOutputLimits(1);
 
 		/* Send auto options */
 		// Starting Position
@@ -429,8 +408,6 @@ private:
 	bool joystickButton3DBounce = false;
 	bool joystickButton4DBounce = false;
 	std::stack<AutoActionTags> autoActions;
-	MiniPID pidDrive{1,0,0};
-	MiniPID pidTurn{1,0,0};
 };
 
 START_ROBOT_CLASS(Robot)

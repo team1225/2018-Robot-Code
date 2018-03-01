@@ -21,7 +21,7 @@ Claw::Claw(
 		theClaw {pcmId, clawForwardChannel, clawReverseChannel},
 		leftRam {pcmId, leftRamForwardChannel, leftRamReverseChannel},
 		rightRam {pcmId, rightRamForwardChannel, rightRamReverseChannel} {
-	this->Open();
+	this->Close();
 	this->PullRam();
 }
 

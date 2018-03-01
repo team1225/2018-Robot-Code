@@ -14,13 +14,7 @@
 Lifter::Lifter(int pcmId, int forwardChannel, int reverseChannel) :
 	Subsystem("ExampleSubsystem"),
 	theLifter{pcmId, forwardChannel, reverseChannel} {
-	this->SolonoidInit();
-}
-
-void Lifter::SolonoidInit() {
-	theLifter.Set(DoubleSolenoid::kReverse);
-	theLifter.Set(DoubleSolenoid::kForward);
-	theLifter.Set(DoubleSolenoid::kOff);
+	this->Drop();
 }
 
 void Lifter::Lift() {
@@ -28,7 +22,7 @@ void Lifter::Lift() {
 }
 
 void Lifter::Drop() {
-	theLifter.Set(DoubleSolenoid::kOff);
+	theLifter.Set(DoubleSolenoid::kReverse);
 }
 
 void Lifter::Toggle() {
@@ -47,11 +41,11 @@ bool Lifter::GetPosition() {
 	if (theLifter.Get() == DoubleSolenoid::kForward) {
 			return LIFTER_UP;
 		}
-		else if (theLifter.Get() == DoubleSolenoid::kOff) {
+		else if (theLifter.Get() == DoubleSolenoid::kReverse) {
 			return LIFTER_DOWN;
 		}
 		else {
-			theLifter.Set(DoubleSolenoid::kOff);
+			theLifter.Set(DoubleSolenoid::kReverse);
 			return LIFTER_DOWN;
 		}
 }

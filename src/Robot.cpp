@@ -13,6 +13,7 @@
 #include <SmartDashboard/SendableChooser.h>
 #include <SmartDashboard/SmartDashboard.h>
 #include <DriverStation.h>
+#include <PIDController.h>
 #include <TimedRobot.h>
 #include <ctre/Phoenix.h>
 #include <DriverStation.h>
@@ -23,6 +24,7 @@
 #include <Commands/Command.h>
 #include <Commands/Scheduler.h>
 #include "ADIS16448_IMU/ADIS16448_IMU.h"
+#include "MiniPID/MiniPID.h"
 #include "RobotMap.h"
 
 #include "Subsystems/Claw.h"
@@ -106,7 +108,7 @@ public:
 
 		/* get gamepad stick values */
 		double forw = -joystick.GetRawAxis(1); /* positive is forward */
-		double turn = +joystick.GetRawAxis(0); /* positive is right */
+		double turn = +joystick.GetRawAxis(2); /* positive is right */
 
 		/* deadband gamepad 10% */
 		if (fabs(forw) < 0.10)
@@ -171,7 +173,7 @@ public:
 		std::cout << "Gyro Angle:" << imu.GetAngle();
 	}
 
-	void PidDrive(int targetPosition) {
+/*	void PidDrive(int targetPosition) {
 		// Setting PID paramaters
 		leftDrive.SelectProfileSlot(0, 0);
 		leftDrive.Config_kF(0, 0.2, 0);
@@ -199,33 +201,49 @@ public:
 				) {
 			frc::Wait(0.01);
 		}
+	}*/
+
+	void PidDrive(int targetPosition) {
+		double allowableError = PID_ALLOWABLE_ERROR, period = 0.05, currentPosition,
+				startingPosition = (leftDrive.GetSelectedSensorPosition(0) + rightDrive.GetSelectedSensorPosition(0))/2,
+				targetAngle = 0, currentAngle,
+				effortDrive, effortTurn;
+		targetPosition = targetPosition + startingPosition;
+		pidTurn.reset();
+		pidDrive.reset();
+		imu.Reset();
+		while (
+				currentPosition = 
+					(leftDrive.GetSelectedSensorPosition(0) + 
+						rightDrive.GetSelectedSensorPosition(0))/2,
+					currentAngle = imu.GetAngle(),
+					((currentPosition >= targetPosition-allowableError)
+					&& (currentPosition <= targetPosition+allowableError))
+					&& IsEnabled() && IsAutonomous()
+		) {
+			effortTurn = pidTurn.getOutput(currentAngle, targetAngle);
+			effortDrive = pidDrive.getOutput(currentPosition, targetPosition);
+
+			robotDrive.ArcadeDrive(effortDrive, effortTurn);
+			frc::Wait(period);
+		}
+		robotDrive.ArcadeDrive(0, 0);
 	}
 
 	void PidTurn(int targetAngle) {
-		double allowableError = 5, period = 0.01;
-		float P = 0, I = 0, D = 0, effort,
-				currentAngle, error, errorLast=targetAngle;
+		double allowableError = 5, period = 0.05, currentAngle, effortTurn;
+		pidTurn.reset();
 		imu.Reset();
 		while (currentAngle = imu.GetAngle(),
-				((currentAngle >=targetAngle-allowableError)
-				|| (currentAngle >=targetAngle+allowableError))
+				((currentAngle >= targetAngle-allowableError)
+				&& (currentAngle <= targetAngle+allowableError))
 				&& IsEnabled() && IsAutonomous()
-				) {
-			error=(currentAngle-targetAngle);
-			P = (error-allowableError);
-			I += error * period;
-			D = (error-errorLast)/period;
-			errorLast = error;
-
-			effort = PID_TURN_KF * (
-					PID_TURN_KP * P +
-					PID_TURN_KI * I +
-					PID_TURN_KD * D
-					);
-
-			robotDrive.ArcadeDrive(0, effort);
+		) {
+			effortTurn = pidTurn.getOutput(currentAngle, targetAngle);
+			robotDrive.ArcadeDrive(0, effortTurn);
 			frc::Wait(period);
 		}
+		robotDrive.ArcadeDrive(0, 0);
 	}
 
 	void AutonomousInit() {
@@ -387,7 +405,8 @@ public:
 			break;
 
 		default:
-			llvm::outs() << "Invalid Autonomous action detected! Skipping...\n";
+			//llvm::outs() << "Invalid Autonomous action detected! Skipping...\n";
+			break;
 		}
 	}
 
@@ -404,6 +423,10 @@ public:
 		// And Safety Expiration
 		robotDrive.SetExpiration(0.05);
 
+		// Set PID output to -1 to 1
+		pidTurn.setOutputLimits(1);
+		pidDrive.setOutputLimits(1);
+
 		/* Send auto options */
 		// Starting Position
 		startingPosition.AddDefault(pos1, pos1);
@@ -412,7 +435,7 @@ public:
 		frc::SmartDashboard::PutData("Starting Position", &startingPosition);
 		// Whether or not to drop, left and right
 		autoDropLeft.AddDefault(autoDropLeftYes, autoDropLeftYes);
-		autoDropLeft.AddObject(autoDropLeftNo,autoDropLeftNo);
+		autoDropLeft.AddObject(autoDropLeftNo, autoDropLeftNo);
 		frc::SmartDashboard::PutData("Auto Drop Left", &autoDropLeft);
 		autoDropRight.AddDefault(autoDropRightYes, autoDropRightYes);
 		autoDropRight.AddObject(autoDropRightNo,autoDropRightNo);
@@ -420,14 +443,13 @@ public:
 		// Whether or not to wait, left and right
 		autoDelayLeft.AddDefault(autoDelayLeftNo, autoDelayLeftNo);
 		autoDelayLeft.AddObject(autoDelayLeftYes, autoDelayLeftYes);
-		frc::SmartDashboard::PutData("Auto Delay", &autoDelayLeft);
+		frc::SmartDashboard::PutData("Auto Delay Left", &autoDelayLeft);
 		autoDelayRight.AddDefault(autoDelayRightNo, autoDelayRightNo);
 		autoDelayRight.AddObject(autoDelayRightYes, autoDelayRightYes);
-		frc::SmartDashboard::PutData("Auto Delay", &autoDelayRight);
+		frc::SmartDashboard::PutData("Auto Delay Right", &autoDelayRight);
 
 		// Calibrate Gyro
 		imu.Calibrate();
-
 	}
 
 private:
@@ -436,6 +458,8 @@ private:
 	bool joystickButton3DBounce = false;
 	bool joystickButton4DBounce = false;
 	std::stack<int> autoActions;
+	MiniPID pidDrive{1,0,0};
+	MiniPID pidTurn{1,0,0};
 };
 
 START_ROBOT_CLASS(Robot)

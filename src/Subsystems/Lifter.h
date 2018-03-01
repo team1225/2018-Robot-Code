@@ -15,7 +15,6 @@
 class Lifter : public Subsystem {
 private:
 	DoubleSolenoid theLifter;
-	void SolonoidInit();
 
 public:
 	Lifter(

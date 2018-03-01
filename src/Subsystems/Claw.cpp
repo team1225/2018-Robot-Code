@@ -6,21 +6,21 @@
 /*----------------------------------------------------------------------------*/
 
 #include "Claw.h"
-#include "../RobotMap.h"
 
 #include <DoubleSolenoid.h>
 #include <Timer.h>
 
 Claw::Claw(
-		int pcmId,
-		int clawForwardChannel, int clawReverseChannel,
-		int leftRamForwardChannel, int leftRamReverseChannel,
-		int rightRamForwardChannel, int rightRamReverseChannel
-		) :
-		Subsystem("ExampleSubsystem"),
-		theClaw {pcmId, clawForwardChannel, clawReverseChannel},
-		leftRam {pcmId, leftRamForwardChannel, leftRamReverseChannel},
-		rightRam {pcmId, rightRamForwardChannel, rightRamReverseChannel} {
+	int pcmId,
+	int clawForwardChannel, int clawReverseChannel,
+	int leftRamForwardChannel, int leftRamReverseChannel,
+	int rightRamForwardChannel, int rightRamReverseChannel
+) :
+	Subsystem("ExampleSubsystem"),
+	theClaw {pcmId, clawForwardChannel, clawReverseChannel},
+	leftRam {pcmId, leftRamForwardChannel, leftRamReverseChannel},
+	rightRam {pcmId, rightRamForwardChannel, rightRamReverseChannel}
+{
 	this->Close();
 	this->PullRam();
 }
@@ -34,10 +34,10 @@ void Claw::Close() {
 }
 
 void Claw::Toggle() {
-	if (this->GetPosition() == CLAW_CLOSED) {
+	if (this->GetPosition() == Claw::Position::kClosed) {
 		this->Open();
 	}
-	else if (this->GetPosition() == CLAW_OPEN) {
+	else if (this->GetPosition() == Claw::Position::kOpen) {
 		this->Close();
 	}
 	else {
@@ -62,17 +62,17 @@ void Claw::Fire() {
 	this->PullRam();
 }
 
-bool Claw::GetPosition() {
+Claw::Position Claw::GetPosition() {
 	if (theClaw.Get() == DoubleSolenoid::kForward) {
-			return CLAW_CLOSED;
-		}
-		else if (theClaw.Get() == DoubleSolenoid::kReverse) {
-			return CLAW_OPEN;
-		}
-		else {
-			theClaw.Set(DoubleSolenoid::kReverse);
-			return CLAW_CLOSED;
-		}
+		return Claw::Position::kOpen;
+	}
+	else if (theClaw.Get() == DoubleSolenoid::kReverse) {
+		return Claw::Position::kClosed;
+	}
+	else {
+		theClaw.Set(DoubleSolenoid::kReverse);
+		return Claw::Position::kClosed;
+	}
 }
 
 void Claw::InitDefaultCommand() {

@@ -50,8 +50,8 @@ public:
 	Faults _faults_R;
 
 	DifferentialDrive robotDrive{
-			leftDrive,
-			rightDrive
+		leftDrive,
+		rightDrive
 	};
 
 	ADIS16448_IMU imu;
@@ -63,10 +63,10 @@ public:
 		RIGHT_RAM_FWD_CHANNEL, RIGHT_RAM_BWD_CHANNEL
 	};
 	Lifter arm{
-		PCM_ARM,
+		PCM_ARM, Lifter::Position::kUp,
 		ARM_FWD_CHANNEL, ARM_BWD_CHANNEL};
 	Lifter lift{
-		PCM_BODY,
+		PCM_BODY, Lifter::Position::kDown,
 		LIFT_FWD_CHANNEL, LIFT_BWD_CHANNEL
 	};
 
@@ -107,8 +107,8 @@ public:
 	void TeleopPeriodic() {
 
 		/* get gamepad stick values */
-		double forw = -joystick.GetRawAxis(1); /* positive is forward */
-		double turn = +joystick.GetRawAxis(2); /* positive is right */
+		double forw = -0.40 * joystick.GetRawAxis(1); /* positive is forward */
+		double turn = +0.40 * joystick.GetRawAxis(2); /* positive is right */
 
 		/* deadband gamepad 10% */
 		if (fabs(forw) < 0.10)
@@ -173,53 +173,23 @@ public:
 		std::cout << "Gyro Angle:" << imu.GetAngle();
 	}
 
-/*	void PidDrive(int targetPosition) {
-		// Setting PID paramaters
-		leftDrive.SelectProfileSlot(0, 0);
-		leftDrive.Config_kF(0, 0.2, 0);
-		leftDrive.Config_kP(0, 0.2, 0);
-		leftDrive.Config_kI(0, 0, 0);
-		leftDrive.Config_kD(0, 0, 0);
-		leftDrive.Config_IntegralZone(0, 100, 0);
-		leftDrive.ConfigAllowableClosedloopError(0, PID_ALLOWABLE_ERROR, 0);
-		rightDrive.SelectProfileSlot(0, 0);
-		rightDrive.Config_kF(0, 0.2, 0);
-		rightDrive.Config_kP(0, 0.2, 0);
-		rightDrive.Config_kI(0, 0, 0);
-		rightDrive.Config_kD(0, 0, 0);
-		rightDrive.Config_IntegralZone(0, 100, 0);
-		rightDrive.ConfigAllowableClosedloopError(0, PID_ALLOWABLE_ERROR, 0);
-
-		leftDrive.Set(ctre::phoenix::motorcontrol::ControlMode::Position,
-				targetPosition);
-		rightDrive.Set(ctre::phoenix::motorcontrol::ControlMode::Position,
-				targetPosition);
-
-		while (
-				!((leftDrive.Get() == 0) && (rightDrive.Get() == 0))
-				&& IsEnabled() && IsAutonomous()
-				) {
-			frc::Wait(0.01);
-		}
-	}*/
-
 	void PidDrive(int targetPosition) {
 		double allowableError = PID_ALLOWABLE_ERROR, period = 0.05, currentPosition,
-				startingPosition = (leftDrive.GetSelectedSensorPosition(0) + rightDrive.GetSelectedSensorPosition(0))/2,
-				targetAngle = 0, currentAngle,
-				effortDrive, effortTurn;
+			startingPosition = (leftDrive.GetSelectedSensorPosition(0) + rightDrive.GetSelectedSensorPosition(0))/2,
+			targetAngle = 0, currentAngle,
+			effortDrive, effortTurn;
 		targetPosition = targetPosition + startingPosition;
 		pidTurn.reset();
 		pidDrive.reset();
 		imu.Reset();
 		while (
-				currentPosition = 
-					(leftDrive.GetSelectedSensorPosition(0) + 
-						rightDrive.GetSelectedSensorPosition(0))/2,
-					currentAngle = imu.GetAngle(),
-					((currentPosition >= targetPosition-allowableError)
-					&& (currentPosition <= targetPosition+allowableError))
-					&& IsEnabled() && IsAutonomous()
+			currentPosition = 
+				(leftDrive.GetSelectedSensorPosition(0) + 
+				rightDrive.GetSelectedSensorPosition(0))/2,
+			currentAngle = imu.GetAngle(),
+			((currentPosition >= targetPosition-allowableError)
+				&& (currentPosition <= targetPosition+allowableError))
+				&& IsEnabled() && IsAutonomous()
 		) {
 			effortTurn = pidTurn.getOutput(currentAngle, targetAngle);
 			effortDrive = pidDrive.getOutput(currentPosition, targetPosition);
@@ -234,8 +204,9 @@ public:
 		double allowableError = 5, period = 0.05, currentAngle, effortTurn;
 		pidTurn.reset();
 		imu.Reset();
-		while (currentAngle = imu.GetAngle(),
-				((currentAngle >= targetAngle-allowableError)
+		while (
+			currentAngle = imu.GetAngle(),
+			((currentAngle >= targetAngle-allowableError)
 				&& (currentAngle <= targetAngle+allowableError))
 				&& IsEnabled() && IsAutonomous()
 		) {
@@ -254,12 +225,12 @@ public:
 
 		// Collect Options
 		std::string targets = frc::DriverStation::GetInstance().GetGameSpecificMessage();
-		bool switchTarget;
+		SwitchTargetPos switchTarget;
 		if ((targets[0] == 'L') || (targets[0] == 'l')) {
-			switchTarget = SWITCH_TARGET_LEFT;
+			switchTarget = SwitchTargetPos::Left;
 		}
 		else { //if ((targets[0] == 'R') || (targets[0] == 'r')) {
-			switchTarget = SWITCH_TARGET_RIGHT;
+			switchTarget = SwitchTargetPos::Right;
 		}
 		std::string optionStart = startingPosition.GetSelected();
 		std::string optionDropLeft = autoDropLeft.GetSelected();
@@ -267,7 +238,7 @@ public:
 		std::string optionDelayLeft = autoDelayLeft.GetSelected();
 		std::string optionDelayRight = autoDelayRight.GetSelected();
 		// Output to console, for debugging
-		if (switchTarget == SWITCH_TARGET_LEFT){
+		if (switchTarget == SwitchTargetPos::Left){
 			std::cout << "Switch target is Left from " << targets << "/n";
 		}
 		else {
@@ -280,11 +251,11 @@ public:
 		std::cout << "Delay Option Right: " << optionDelayRight << "\n";
 
 		if ((optionDelayLeft == autoDelayLeftYes) &&
-				(switchTarget == SWITCH_TARGET_LEFT)) {
+				(switchTarget == SwitchTargetPos::Left)) {
 			frc::Wait(5);
 		}
 		if ((optionDelayRight == autoDelayRightYes) &&
-				(switchTarget == SWITCH_TARGET_RIGHT)) {
+				(switchTarget == SwitchTargetPos::Right)) {
 			frc::Wait(5);
 		}
 
@@ -297,69 +268,69 @@ public:
 		 */
 
 		if (optionStart == pos1) {
-			if ((switchTarget == SWITCH_TARGET_LEFT)
+			if ((switchTarget == SwitchTargetPos::Left)
 					&& (optionDropLeft == autoDropLeftYes)) {
 				std::cout << "Going from Pos1 to the Left Switch to drop, then back up\n";
-				autoActions.push(AUTO_DRIVE_BACKUP);
-				autoActions.push(AUTO_DROP_CUBE);
-				autoActions.push(AUTO_TURN_RIGHT);
-				autoActions.push(AUTO_DRIVE_14FT);
+				autoActions.push(AutoActionTags::Backup);
+				autoActions.push(AutoActionTags::DropCube);
+				autoActions.push(AutoActionTags::TurnLeft);
+				autoActions.push(AutoActionTags::Drive14ft);
 			}
 			else {
 				std::cout << "Going from Pos1, past the switch to the left.\n";
-				autoActions.push(AUTO_TURN_RIGHT);
-				autoActions.push(AUTO_DRIVE_17FT);
+				autoActions.push(AutoActionTags::TurnRight);
+				autoActions.push(AutoActionTags::Drive17ft);
 			}
 		}
 
 		else if (optionStart == pos2) {
-			if (switchTarget == SWITCH_TARGET_LEFT) {
+			if (switchTarget == SwitchTargetPos::Left) {
 				if (optionDropLeft == autoDropLeftYes) {
 					std::cout << "Going from Pos2 to the Left switch to drop.\n";
-					autoActions.push(AUTO_DROP_CUBE);
-					autoActions.push(AUTO_TURN_RIGHT);
-					autoActions.push(AUTO_DRIVE_6FT);
-					autoActions.push(AUTO_TURN_RIGHT);
-					autoActions.push(AUTO_DRIVE_8FT);
-					autoActions.push(AUTO_TURN_LEFT);
-					autoActions.push(AUTO_DRIVE_6FT);
+					autoActions.push(AutoActionTags::DropCube);
+					autoActions.push(AutoActionTags::TurnRight);
+					autoActions.push(AutoActionTags::Drive6ft);
+					autoActions.push(AutoActionTags::TurnRight);
+					autoActions.push(AutoActionTags::Drive8ft);
+					autoActions.push(AutoActionTags::TurnLeft);
+					autoActions.push(AutoActionTags::Drive6ft);
 				}
 				else if (optionDropLeft == autoDropLeftNo) {
 					std::cout << "Going from Pos2 to the auto line, ignoring the Left Switch.\n";
-					autoActions.push(AUTO_DRIVE_12FT);
+					autoActions.push(AutoActionTags::Drive12ft);
 				}
 			}
-			else if (switchTarget == SWITCH_TARGET_RIGHT) {
+			else if (switchTarget == SwitchTargetPos::Right) {
 				if (optionDropLeft == autoDropLeftYes) {
 					std::cout << "Going from Pos2 to the Right switch to drop.\n";
-					autoActions.push(AUTO_DROP_CUBE);
-					autoActions.push(AUTO_TURN_LEFT);
-					autoActions.push(AUTO_DRIVE_6FT);
-					autoActions.push(AUTO_TURN_LEFT);
-					autoActions.push(AUTO_DRIVE_8FT);
-					autoActions.push(AUTO_TURN_RIGHT);
-					autoActions.push(AUTO_DRIVE_6FT);
+					autoActions.push(AutoActionTags::DropCube);
+					autoActions.push(AutoActionTags::TurnLeft);
+					autoActions.push(AutoActionTags::Drive6ft);
+					autoActions.push(AutoActionTags::TurnLeft);
+					autoActions.push(AutoActionTags::Drive8ft);
+					autoActions.push(AutoActionTags::TurnRight);
+					autoActions.push(AutoActionTags::Drive6ft);
 				}
 				else if (optionDropLeft == autoDropLeftNo) {
 					std::cout << "Going from Pos2 to the auto line, ignoring the Right Switch.\n";
-					autoActions.push(AUTO_DRIVE_12FT);
+					autoActions.push(AutoActionTags::Drive12ft);
 				}
 			}
 		}
 
 		else if (optionStart == pos3) {
-			if ((switchTarget == SWITCH_TARGET_RIGHT)
+			if ((switchTarget == SwitchTargetPos::Right)
 					&& (optionDropRight == autoDropRightYes)) {
 				std::cout << "Going from Pos1 to the Right Switch to drop, then back up\n";
-				autoActions.push(AUTO_DRIVE_BACKUP);
-				autoActions.push(AUTO_DROP_CUBE);
-				autoActions.push(AUTO_TURN_LEFT);
-				autoActions.push(AUTO_DRIVE_14FT);
+				autoActions.push(AutoActionTags::Backup);
+				autoActions.push(AutoActionTags::DropCube);
+				autoActions.push(AutoActionTags::TurnLeft);
+				autoActions.push(AutoActionTags::Drive14ft);
 			}
 			else {
 				std::cout << "Going from Pos1, past the switch to the right.\n";
-				autoActions.push(AUTO_TURN_LEFT);
-				autoActions.push(AUTO_DRIVE_17FT);
+				autoActions.push(AutoActionTags::TurnLeft);
+				autoActions.push(AutoActionTags::Drive17ft);
 			}
 		}
 	}
@@ -368,38 +339,38 @@ public:
 		int action = autoActions.top();
 		autoActions.pop();
 		switch (action) {
-		case AUTO_DRIVE_6FT:
+		case AutoActionTags::Drive6ft:
 			std::cout << "Driving 6 feet with PID\n";
 			PidDrive(PID_POSITION_6FT);
 			break;
-		case AUTO_DRIVE_8FT:
+		case AutoActionTags::Drive8ft:
 			std::cout << "Driving 8 feet with PID\n";
 			PidDrive(PID_POSITION_8FT);
 			break;
-		case AUTO_DRIVE_12FT:
+		case AutoActionTags::Drive12ft:
 			std::cout << "Driving 12 feet with PID\n";
 			PidDrive(PID_POSITION_12FT);
 			break;
-		case AUTO_DRIVE_14FT:
+		case AutoActionTags::Drive14ft:
 			std::cout << "Driving 14 feet with PID\n";
 			PidDrive(PID_POSITION_14FT);
 			break;
-		case AUTO_DRIVE_17FT:
+		case AutoActionTags::Drive17ft:
 			std::cout << "Driving 17 feet with PID\n";
 			PidDrive(PID_POSITION_17FT);
 			break;
 
-		case AUTO_TURN_LEFT:
+		case AutoActionTags::TurnLeft:
 			std::cout << "Turning left with PID\n";
 			PidTurn(PID_TURN_LEFT);
 			frc::Wait(1);
 			break;
-		case AUTO_TURN_RIGHT:
+		case AutoActionTags::TurnRight:
 			std::cout << "Turning right with PID\n";
 			PidTurn(PID_TURN_RIGHT);
 			break;
 
-		case AUTO_DROP_CUBE:
+		case AutoActionTags::DropCube:
 			std::cout << "Dropping the cube, FIRE!\n";
 			claw.Fire();
 			break;
@@ -457,7 +428,7 @@ private:
 	bool joystickButton2DBounce = false;
 	bool joystickButton3DBounce = false;
 	bool joystickButton4DBounce = false;
-	std::stack<int> autoActions;
+	std::stack<AutoActionTags> autoActions;
 	MiniPID pidDrive{1,0,0};
 	MiniPID pidTurn{1,0,0};
 };

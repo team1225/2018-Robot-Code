@@ -21,17 +21,18 @@ private:
 	void PullRam();
 
 public:
+	enum Position { kOpen, kClosed };
 	Claw(
-			int pcmId,
-			int clawForwardChannel, int clawReverseChannel,
-			int leftRamForwardChannel, int leftRamReverseChannel,
-			int rightRamForwardChannel, int rightRamReverseChannel
-			);
+		int pcmId,
+		int clawForwardChannel, int clawReverseChannel,
+		int leftRamForwardChannel, int leftRamReverseChannel,
+		int rightRamForwardChannel, int rightRamReverseChannel
+	);
 	void Open();
 	void Close();
 	void Toggle();
 	void Fire();
-	bool GetPosition();
+	Claw::Position GetPosition();
 	void InitDefaultCommand();
 };
 

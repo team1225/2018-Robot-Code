@@ -6,15 +6,19 @@
 /*----------------------------------------------------------------------------*/
 
 #include "Lifter.h"
-#include "../RobotMap.h"
 
 #include <DoubleSolenoid.h>
 #include <Timer.h>
 
-Lifter::Lifter(int pcmId, int forwardChannel, int reverseChannel) :
+Lifter::Lifter(int pcmId, Lifter::Position defaultPosition,
+		int forwardChannel, int reverseChannel) :
 	Subsystem("ExampleSubsystem"),
-	theLifter{pcmId, forwardChannel, reverseChannel} {
-	this->Drop();
+	theLifter{pcmId, forwardChannel, reverseChannel}
+{
+	if (defaultPosition == Lifter::Position::kUp)
+		this->Lift();
+	else
+		this->Drop();
 }
 
 void Lifter::Lift() {
@@ -26,10 +30,10 @@ void Lifter::Drop() {
 }
 
 void Lifter::Toggle() {
-	if (this->GetPosition() == LIFTER_DOWN) {
+	if (this->GetPosition() == Lifter::Position::kDown) {
 		this->Lift();
 	}
-	else if (this->GetPosition() == LIFTER_UP) {
+	else if (this->GetPosition() == Lifter::Position::kUp) {
 		this->Drop();
 	}
 	else {
@@ -37,16 +41,16 @@ void Lifter::Toggle() {
 	}
 }
 
-bool Lifter::GetPosition() {
+Lifter::Position Lifter::GetPosition() {
 	if (theLifter.Get() == DoubleSolenoid::kForward) {
-			return LIFTER_UP;
+			return Lifter::Position::kUp;
 		}
 		else if (theLifter.Get() == DoubleSolenoid::kReverse) {
-			return LIFTER_DOWN;
+			return Lifter::Position::kDown;
 		}
 		else {
 			theLifter.Set(DoubleSolenoid::kReverse);
-			return LIFTER_DOWN;
+			return Lifter::Position::kDown;
 		}
 }
 

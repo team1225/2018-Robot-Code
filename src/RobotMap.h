@@ -30,30 +30,21 @@
 #define RIGHT_RAM_FWD_CHANNEL 6
 #define RIGHT_RAM_BWD_CHANNEL 7
 
-/* Define global macros */
-
-#define CLAW_OPEN false
-#define CLAW_CLOSED true
-
-#define LIFTER_UP true
-#define LIFTER_DOWN false
-
-#define SWITCH_TARGET_LEFT true
-#define SWITCH_TARGET_RIGHT false
+enum SwitchTargetPos { Left, Right };
 
 /* Define Auto actions */
 
-#define AUTO_DRIVE_6FT 00
-#define AUTO_DRIVE_8FT 01
-#define AUTO_DRIVE_12FT 02
-#define AUTO_DRIVE_14FT 03
-#define AUTO_DRIVE_17FT 04
-#define AUTO_DRIVE_BACKUP 05
-
-#define AUTO_TURN_LEFT 10
-#define AUTO_TURN_RIGHT 11
-
-#define AUTO_DROP_CUBE 20
+enum AutoActionTags {
+	Drive6ft,
+	Drive8ft,
+	Drive12ft,
+	Drive14ft,
+	Drive17ft,
+	Backup,
+	TurnLeft,
+	TurnRight,
+	DropCube
+};
 
 /* Define Constraints */
 

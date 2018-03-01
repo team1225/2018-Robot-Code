@@ -17,13 +17,14 @@ private:
 	DoubleSolenoid theLifter;
 
 public:
+	enum Position { kUp, kDown };
 	Lifter(
-			int pcmId,
+			int pcmId, Lifter::Position defaultPosition,
 			int forwardChannel, int reverseChannel);
 	void Lift();
 	void Drop();
 	void Toggle();
-	bool GetPosition();
+	Lifter::Position GetPosition();
 	void InitDefaultCommand();
 };
 

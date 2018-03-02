@@ -35,11 +35,11 @@ public:
 	 * WPI_TalonSRX(CAN Id) CRTE CAN Motor Controllers
 	 * Faults Fault monitoring for WPI_TalonSRXs
 	 * DifferntialDrive(Motor, Motor) Combined drive object for use w/ two wheels
-	 * AnalogGyro(Location) Device to track the current rotation
-	 * Claw(PCM Channels) Abstraction of the robot's Claw
-	 * Lifter(PCM Channels) Abstraction of the robot's Lifter arm
-	 * Joystick Joystick input from the Driver Station
-	 * SendableChooser Option menu on the Smart Dashboard and ShuffleBoard
+	 * ADIS16448 IMU, used here as an advanced gyro (https://github.com/juchong/ADIS16448-RoboRIO-Driver)
+	 * Claw(PCM Id, PCM Channels) Abstraction of the robot's Claw
+	 * Lifter(PCM Id, Default position, PCM Channels) Abstraction of the robot's Lifter and Arm
+	 * Joystick(USB Port) Joystick input from the Driver Station
+	 * SendableChooser<type> Option menu on the Smart Dashboard and ShuffleBoard
 	 * const std::string constant strings, used in the SendableChoosers
 	 * */
 	WPI_TalonSRX rightDrive{11};
@@ -324,33 +324,33 @@ public:
 		switch (action) {
 		case AutoActionTags::Drive6ft:
 			std::cout << "Driving 6 feet with PID\n";
-			AutoDrive(PID_POSITION_6FT);
+			AutoDrive(DRIVE_BITS_TO_INCHES * 72);
 			break;
 		case AutoActionTags::Drive8ft:
 			std::cout << "Driving 8 feet with PID\n";
-			AutoDrive(PID_POSITION_8FT);
+			AutoDrive(DRIVE_BITS_TO_INCHES * 96);
 			break;
 		case AutoActionTags::Drive12ft:
 			std::cout << "Driving 12 feet with PID\n";
-			AutoDrive(PID_POSITION_12FT);
+			AutoDrive(DRIVE_BITS_TO_INCHES * 144);
 			break;
 		case AutoActionTags::Drive14ft:
 			std::cout << "Driving 14 feet with PID\n";
-			AutoDrive(PID_POSITION_14FT);
+			AutoDrive(DRIVE_BITS_TO_INCHES * 168);
 			break;
 		case AutoActionTags::Drive17ft:
 			std::cout << "Driving 17 feet with PID\n";
-			AutoDrive(PID_POSITION_17FT);
+			AutoDrive(DRIVE_BITS_TO_INCHES * 204);
 			break;
 
 		case AutoActionTags::TurnLeft:
 			std::cout << "Turning left with PID\n";
-			AutoTurn(PID_TURN_LEFT);
+			AutoTurn(TURN_LEFT);
 			frc::Wait(1);
 			break;
 		case AutoActionTags::TurnRight:
 			std::cout << "Turning right with PID\n";
-			AutoTurn(PID_TURN_RIGHT);
+			AutoTurn(TURN_RIGHT);
 			break;
 
 		case AutoActionTags::DropCube:

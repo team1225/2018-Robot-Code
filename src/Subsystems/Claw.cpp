@@ -26,11 +26,11 @@ Claw::Claw(
 }
 
 void Claw::Open() {
-	theClaw.Set(DoubleSolenoid::kReverse);
+	theClaw.Set(DoubleSolenoid::kForward);
 }
 
 void Claw::Close() {
-	theClaw.Set(DoubleSolenoid::kForward);
+	theClaw.Set(DoubleSolenoid::kReverse);
 }
 
 void Claw::Toggle() {

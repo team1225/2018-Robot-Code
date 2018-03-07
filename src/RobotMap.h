@@ -46,11 +46,11 @@ enum AutoActionTags {
 	DropCube
 };
 
-/* Define Constraints */
+/* Define Modifiers */
 
 #define DRIVE_BITS_TO_INCHES (4096 / (6*3.1415))
 
-#define TURN_LEFT -270
-#define TURN_RIGHT 90
+#define TURN_ANGLE_OVERSTOP 10
+#define DRIVE_POSITION_OVERSTOP 100
 
 #endif /* SRC_ROBOTMAP_H_ */

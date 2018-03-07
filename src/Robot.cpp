@@ -106,8 +106,8 @@ public:
 	void TeleopPeriodic() {
 
 		/* get gamepad stick values */
-		double forw = -0.40 * joystick.GetRawAxis(1); /* positive is forward */
-		double turn = +0.40 * joystick.GetRawAxis(2); /* positive is right */
+		double forw = -0.70 * joystick.GetRawAxis(1); /* positive is forward */
+		double turn = +0.70 * joystick.GetRawAxis(2); /* positive is right */
 
 		/* deadband gamepad 10% */
 		if (fabs(forw) < 0.10)
@@ -126,35 +126,37 @@ public:
 		robotDrive.ArcadeDrive(forw, turn, false);
 		
 		/* lift/lower arm */
-		if (joystick.GetRawButton(1) && !joystickButton1DBounce) {
-			joystickButton1DBounce = true;
-			arm.Toggle();
-		} else if (!joystick.GetRawButton(1)) {
-			joystickButton1DBounce = false;
-		}
-
-		/* lift/drop lift */
-		if (joystick.GetRawButton(4) && !joystickButton4DBounce) {
+		if (joystick.GetRawButton(4) && !joystickButton4DBounce
+				&& (lift.GetPosition() == Lifter::Position::kDown)) { // Y Button
 			joystickButton4DBounce = true;
-			lift.Toggle();
+			arm.Toggle();
 		} else if (!joystick.GetRawButton(4)) {
 			joystickButton4DBounce = false;
 		}
 
+		/* lift/drop lift */
+		if (joystick.GetRawButton(9) && !joystickButton9DBounce) { // X Button
+			joystickButton9DBounce = true;
+			arm.Lift();
+			lift.Toggle();
+		} else if (!joystick.GetRawButton(9)) {
+			joystickButton9DBounce = false;
+		}
+
 		/* close/open grabber */
-		if (joystick.GetRawButton(2) && !joystickButton2DBounce) {
-			joystickButton2DBounce = true;
+		if (joystick.GetRawButton(6) && !joystickButton6DBounce) { // Left Button
+			joystickButton6DBounce = true;
 			claw.Toggle();
-		} else if (!joystick.GetRawButton(2)) {
-			joystickButton2DBounce = false;
+		} else if (!joystick.GetRawButton(6)) {
+			joystickButton6DBounce = false;
 		}
 
 		/* fire grabber */
-		if (joystick.GetRawButton(3) && !joystickButton3DBounce) {
-			joystickButton3DBounce = true;
+		if (joystick.GetRawButton(10) && !joystickButton10DBounce) { // Left Trigger
+			joystickButton10DBounce = true;
 			claw.Fire();
-		} else if (!joystick.GetRawButton(3)) {
-			joystickButton3DBounce = false;
+		} else if (!joystick.GetRawButton(10)) {
+			joystickButton10DBounce = false;
 		}
 
 		/* drive motor at least 25%, Talons will auto-detect if sensor is out of phase */
@@ -174,31 +176,45 @@ public:
 
 	void AutoDrive(int targetPosition) {
 		double currentPosition = ((leftDrive.GetSelectedSensorPosition(0) + rightDrive.GetSelectedSensorPosition(0))/2),
-			period = 0.05, effortDrive = 0.30, kP_turn = 0.20, currentAngle,
+			period = 0.05, effortDrive = 0.50, kP_turn = 0.20, currentAngle,
 			startingPosition = currentPosition;
 		targetPosition = targetPosition + startingPosition;
 		imu.Reset();
-		while ((currentPosition >= targetPosition) && IsEnabled() && IsAutonomous()) {
+		while ((currentPosition < (targetPosition - DRIVE_POSITION_OVERSTOP)) && IsEnabled() && IsAutonomous()) {
 			currentPosition = ((leftDrive.GetSelectedSensorPosition(0) +
 						rightDrive.GetSelectedSensorPosition(0))/2);
 			currentAngle = imu.GetAngle();
 
-			robotDrive.ArcadeDrive(effortDrive, -(currentAngle * kP_turn));
+			robotDrive.ArcadeDrive(effortDrive, 0); //-(currentAngle * kP_turn));
+			frc::Wait(period);
+		}
+		robotDrive.ArcadeDrive(0, 0);
+	}
+/*
+	void AutoTurnRight() {
+		imu.Reset();
+		double period = 0.05, currentAngle = imu.GetAngleX();
+		while ((currentAngle >= (90 - TURN_ANGLE_OVERSTOP)) && IsEnabled() && IsAutonomous()) {
+			SmartDashboard::PutNumber("IMU R", imu.GetAngleX());
+			currentAngle = imu.GetAngleX();
+			robotDrive.ArcadeDrive(0, -0.20);
 			frc::Wait(period);
 		}
 		robotDrive.ArcadeDrive(0, 0);
 	}
 
-	void AutoTurn(int targetAngle) {
-		double period = 0.05, currentAngle = imu.GetAngle(), effortTurn = 0.20;
+	void AutoTurnLeft() {
 		imu.Reset();
-		while ((currentAngle >= targetAngle) && IsEnabled() && IsAutonomous()) {
-			currentAngle = imu.GetAngle();
-			robotDrive.ArcadeDrive(0, effortTurn);
-			frc::Wait(period);
-		}
-		robotDrive.ArcadeDrive(0, 0);
-	}
+                double period = 0.05, currentAngle = imu.GetAngleX();
+                while ((currentAngle >= (-270 + TURN_ANGLE_OVERSTOP)) && IsEnabled() && IsAutonomous()) {
+			SmartDashboard::PutNumber("IMU L", imu.GetAngleX());
+                        currentAngle = imu.GetAngleX();
+                        robotDrive.ArcadeDrive(0, 0.20);
+                        frc::Wait(period);
+                }
+                robotDrive.ArcadeDrive(0, 0);
+        }
+
 
 	void AutonomousInit() {
 		// Disabling Safety
@@ -249,7 +265,7 @@ public:
 		 * actions are stacked onto the stack autoActions in reverse as
 		 * 		to be popped in the right order
 		 */
-
+/*
 		if (optionStart == pos1) {
 			if ((switchTarget == SwitchTargetPos::Left)
 					&& (optionDropLeft == autoDropLeftYes)) {
@@ -290,7 +306,7 @@ public:
 					autoActions.push(AutoActionTags::TurnLeft);
 					autoActions.push(AutoActionTags::Drive6ft);
 					autoActions.push(AutoActionTags::TurnLeft);
-					autoActions.push(AutoActionTags::Drive8ft);
+				autoActions.push(AutoActionTags::Drive8ft);
 					autoActions.push(AutoActionTags::TurnRight);
 					autoActions.push(AutoActionTags::Drive6ft);
 				}
@@ -345,12 +361,12 @@ public:
 
 		case AutoActionTags::TurnLeft:
 			std::cout << "Turning left with PID\n";
-			AutoTurn(TURN_LEFT);
+			AutoTurnLeft();
 			frc::Wait(1);
 			break;
 		case AutoActionTags::TurnRight:
 			std::cout << "Turning right with PID\n";
-			AutoTurn(TURN_RIGHT);
+			AutoTurnRight();
 			break;
 
 		case AutoActionTags::DropCube:
@@ -362,6 +378,12 @@ public:
 			//llvm::outs() << "Invalid Autonomous action detected! Skipping...\n";
 			break;
 		}
+	}
+*/
+
+	void AutonomousInit() {
+		robotDrive.SetSafetyEnabled(false);
+		AutoDrive(DRIVE_BITS_TO_INCHES * 24);
 	}
 
 	void RobotInit() {
@@ -403,10 +425,10 @@ public:
 	}
 
 private:
-	bool joystickButton1DBounce = false;
-	bool joystickButton2DBounce = false;
-	bool joystickButton3DBounce = false;
 	bool joystickButton4DBounce = false;
+	bool joystickButton9DBounce = false;
+	bool joystickButton6DBounce = false;
+	bool joystickButton10DBounce = false;
 	std::stack<AutoActionTags> autoActions;
 };
 

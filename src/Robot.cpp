@@ -73,25 +73,9 @@ public:
 
 	SendableChooser<std::string> startingPosition;
 	const std::string
-		pos1 = "Position 1",
-		pos2 = "Position 2",
-		pos3 = "Position 3";
-	SendableChooser<std::string> autoDropLeft;
-	const std::string
-		autoDropLeftYes = "Do Drop Cube on Left Switch",
-		autoDropLeftNo = "Do NOT Drop Cube on Left Switch";
-	SendableChooser<std::string> autoDropRight;
-	const std::string
-		autoDropRightYes = "Do Drop Cube on Right Switch",
-		autoDropRightNo = "Do NOT Drop Cube on Right Switch";
-	SendableChooser<std::string> autoDelayLeft;
-	const std::string
-		autoDelayLeftYes = "Delay 5 sec on Left Switch",
-		autoDelayLeftNo = "Do Not Delay 5 Seconds on Left Switch";
-	SendableChooser<std::string> autoDelayRight;
-	const std::string
-		autoDelayRightYes = "Delay 5 sec on Right Switch",
-		autoDelayRightNo = "Do Not Delay 5 Seconds on Right Switch";
+		startSwitchLeft = "Aiming at the switch's left",
+		startSwitchRight = "Aiming at the switch's right",
+		startSwitchOff  = "Aiming past the switch";
 
 	void DisabledInit() {
 		robotDrive.ArcadeDrive(0, 0, false);
@@ -106,8 +90,13 @@ public:
 	void TeleopPeriodic() {
 
 		/* get gamepad stick values */
-		double forw = -0.70 * joystick.GetRawAxis(1); /* positive is forward */
-		double turn = +0.70 * joystick.GetRawAxis(2); /* positive is right */
+		double forwMod = 0.70;
+		double turnMod = 0.50;
+		if (joystick.GetRawButton(12)) {
+			 turnMod = 0.70;
+		}
+		double forw = -forwMod * joystick.GetRawAxis(1); /* positive is forward */
+		double turn = +turnMod * joystick.GetRawAxis(2); /* positive is right */
 
 		/* deadband gamepad 10% */
 		if (fabs(forw) < 0.10)
@@ -118,7 +107,7 @@ public:
 		frc::SmartDashboard::PutNumber("Volts",
 			((leftDrive.GetMotorOutputVoltage() + rightDrive.GetMotorOutputVoltage()) / 2)
 		);
-		frc::SmartDashboard::PutNumber("Amps",\
+		frc::SmartDashboard::PutNumber("Amps",
 			((leftDrive.GetOutputCurrent() + rightDrive.GetOutputCurrent()) / 2)
 		);
 
@@ -174,216 +163,23 @@ public:
 		std::cout << "Gyro Angle:" << imu.GetAngle();
 	}
 
-	void AutoDrive(int targetPosition) {
-		double currentPosition = ((leftDrive.GetSelectedSensorPosition(0) + rightDrive.GetSelectedSensorPosition(0))/2),
-			period = 0.05, effortDrive = 0.50, kP_turn = 0.20, currentAngle,
-			startingPosition = currentPosition;
-		targetPosition = targetPosition + startingPosition;
-		imu.Reset();
-		while ((currentPosition < (targetPosition - DRIVE_POSITION_OVERSTOP)) && IsEnabled() && IsAutonomous()) {
-			currentPosition = ((leftDrive.GetSelectedSensorPosition(0) +
-						rightDrive.GetSelectedSensorPosition(0))/2);
-			currentAngle = imu.GetAngle();
-
-			robotDrive.ArcadeDrive(effortDrive, 0); //-(currentAngle * kP_turn));
-			frc::Wait(period);
-		}
-		robotDrive.ArcadeDrive(0, 0);
-	}
-/*
-	void AutoTurnRight() {
-		imu.Reset();
-		double period = 0.05, currentAngle = imu.GetAngleX();
-		while ((currentAngle >= (90 - TURN_ANGLE_OVERSTOP)) && IsEnabled() && IsAutonomous()) {
-			SmartDashboard::PutNumber("IMU R", imu.GetAngleX());
-			currentAngle = imu.GetAngleX();
-			robotDrive.ArcadeDrive(0, -0.20);
-			frc::Wait(period);
-		}
-		robotDrive.ArcadeDrive(0, 0);
-	}
-
-	void AutoTurnLeft() {
-		imu.Reset();
-                double period = 0.05, currentAngle = imu.GetAngleX();
-                while ((currentAngle >= (-270 + TURN_ANGLE_OVERSTOP)) && IsEnabled() && IsAutonomous()) {
-			SmartDashboard::PutNumber("IMU L", imu.GetAngleX());
-                        currentAngle = imu.GetAngleX();
-                        robotDrive.ArcadeDrive(0, 0.20);
-                        frc::Wait(period);
-                }
-                robotDrive.ArcadeDrive(0, 0);
-        }
-
-
 	void AutonomousInit() {
-		// Disabling Safety
 		robotDrive.SetSafetyEnabled(false);
 
-		while (!autoActions.empty()) { autoActions.pop(); }
+		robotDrive.ArcadeDrive(0.45, 0);
+		frc::Wait(5);
+		robotDrive.ArcadeDrive(0, 0);
 
-		// Collect Options
-		std::string targets = frc::DriverStation::GetInstance().GetGameSpecificMessage();
-		SwitchTargetPos switchTarget;
-		if ((targets[0] == 'L') || (targets[0] == 'l')) {
-			switchTarget = SwitchTargetPos::Left;
-		}
-		else { //if ((targets[0] == 'R') || (targets[0] == 'r')) {
-			switchTarget = SwitchTargetPos::Right;
-		}
-		std::string optionStart = startingPosition.GetSelected();
-		std::string optionDropLeft = autoDropLeft.GetSelected();
-		std::string optionDropRight = autoDropRight.GetSelected();
-		std::string optionDelayLeft = autoDelayLeft.GetSelected();
-		std::string optionDelayRight = autoDelayRight.GetSelected();
-		// Output to console, for debugging
-		if (switchTarget == SwitchTargetPos::Left){
-			std::cout << "Switch target is Left from " << targets << "/n";
-		}
-		else {
-			std::cout << "Switch target is Right from " << targets << "/n";
-		}
-		std::cout << "Starting from " << optionStart << "\n";
-		std::cout << "Power Cube Drop Left? " << optionDropLeft << "\n";
-		std::cout << "Power Cube Drop Right? " << optionDropRight << "\n";
-		std::cout << "Delay Option Left: " << optionDelayLeft << "\n";
-		std::cout << "Delay Option Right: " << optionDelayRight << "\n";
+		std::string targets = DriverStation::GetInstance().GetGameSpecificMessage();
 
-		if ((optionDelayLeft == autoDelayLeftYes) &&
-				(switchTarget == SwitchTargetPos::Left)) {
-			frc::Wait(5);
-		}
-		if ((optionDelayRight == autoDelayRightYes) &&
-				(switchTarget == SwitchTargetPos::Right)) {
-			frc::Wait(5);
-		}
-
-		/*
-		 * Setting actions for the Autonomous loop
-		 * parsing is based on starting position,
-		 * 		switch's target side, and a per-side drop setting.
-		 * actions are stacked onto the stack autoActions in reverse as
-		 * 		to be popped in the right order
-		 */
-/*
-		if (optionStart == pos1) {
-			if ((switchTarget == SwitchTargetPos::Left)
-					&& (optionDropLeft == autoDropLeftYes)) {
-				std::cout << "Going from Pos1 to the Left Switch to drop, then back up\n";
-				autoActions.push(AutoActionTags::Backup);
-				autoActions.push(AutoActionTags::DropCube);
-				autoActions.push(AutoActionTags::TurnLeft);
-				autoActions.push(AutoActionTags::Drive14ft);
-			}
-			else {
-				std::cout << "Going from Pos1, past the switch to the left.\n";
-				autoActions.push(AutoActionTags::TurnRight);
-				autoActions.push(AutoActionTags::Drive17ft);
-			}
-		}
-
-		else if (optionStart == pos2) {
-			if (switchTarget == SwitchTargetPos::Left) {
-				if (optionDropLeft == autoDropLeftYes) {
-					std::cout << "Going from Pos2 to the Left switch to drop.\n";
-					autoActions.push(AutoActionTags::DropCube);
-					autoActions.push(AutoActionTags::TurnRight);
-					autoActions.push(AutoActionTags::Drive6ft);
-					autoActions.push(AutoActionTags::TurnRight);
-					autoActions.push(AutoActionTags::Drive8ft);
-					autoActions.push(AutoActionTags::TurnLeft);
-					autoActions.push(AutoActionTags::Drive6ft);
-				}
-				else if (optionDropLeft == autoDropLeftNo) {
-					std::cout << "Going from Pos2 to the auto line, ignoring the Left Switch.\n";
-					autoActions.push(AutoActionTags::Drive12ft);
-				}
-			}
-			else if (switchTarget == SwitchTargetPos::Right) {
-				if (optionDropLeft == autoDropLeftYes) {
-					std::cout << "Going from Pos2 to the Right switch to drop.\n";
-					autoActions.push(AutoActionTags::DropCube);
-					autoActions.push(AutoActionTags::TurnLeft);
-					autoActions.push(AutoActionTags::Drive6ft);
-					autoActions.push(AutoActionTags::TurnLeft);
-				autoActions.push(AutoActionTags::Drive8ft);
-					autoActions.push(AutoActionTags::TurnRight);
-					autoActions.push(AutoActionTags::Drive6ft);
-				}
-				else if (optionDropLeft == autoDropLeftNo) {
-					std::cout << "Going from Pos2 to the auto line, ignoring the Right Switch.\n";
-					autoActions.push(AutoActionTags::Drive12ft);
-				}
-			}
-		}
-
-		else if (optionStart == pos3) {
-			if ((switchTarget == SwitchTargetPos::Right)
-					&& (optionDropRight == autoDropRightYes)) {
-				std::cout << "Going from Pos1 to the Right Switch to drop, then back up\n";
-				autoActions.push(AutoActionTags::Backup);
-				autoActions.push(AutoActionTags::DropCube);
-				autoActions.push(AutoActionTags::TurnLeft);
-				autoActions.push(AutoActionTags::Drive14ft);
-			}
-			else {
-				std::cout << "Going from Pos1, past the switch to the right.\n";
-				autoActions.push(AutoActionTags::TurnLeft);
-				autoActions.push(AutoActionTags::Drive17ft);
-			}
-		}
-	}
-	
-	void AutonomousPeriodic() {
-		int action = autoActions.top();
-		autoActions.pop();
-		switch (action) {
-		case AutoActionTags::Drive6ft:
-			std::cout << "Driving 6 feet with PID\n";
-			AutoDrive(DRIVE_BITS_TO_INCHES * 72);
-			break;
-		case AutoActionTags::Drive8ft:
-			std::cout << "Driving 8 feet with PID\n";
-			AutoDrive(DRIVE_BITS_TO_INCHES * 96);
-			break;
-		case AutoActionTags::Drive12ft:
-			std::cout << "Driving 12 feet with PID\n";
-			AutoDrive(DRIVE_BITS_TO_INCHES * 144);
-			break;
-		case AutoActionTags::Drive14ft:
-			std::cout << "Driving 14 feet with PID\n";
-			AutoDrive(DRIVE_BITS_TO_INCHES * 168);
-			break;
-		case AutoActionTags::Drive17ft:
-			std::cout << "Driving 17 feet with PID\n";
-			AutoDrive(DRIVE_BITS_TO_INCHES * 204);
-			break;
-
-		case AutoActionTags::TurnLeft:
-			std::cout << "Turning left with PID\n";
-			AutoTurnLeft();
-			frc::Wait(1);
-			break;
-		case AutoActionTags::TurnRight:
-			std::cout << "Turning right with PID\n";
-			AutoTurnRight();
-			break;
-
-		case AutoActionTags::DropCube:
-			std::cout << "Dropping the cube, FIRE!\n";
+		if ((startingPosition.GetSelected() == startSwitchLeft) &&
+				((targets[0] == 'L') || (targets[0] == 'l'))) {
 			claw.Fire();
-			break;
-
-		default:
-			//llvm::outs() << "Invalid Autonomous action detected! Skipping...\n";
-			break;
+		} else
+		if ((startingPosition.GetSelected() == startSwitchRight) &&
+				((targets[0] == 'R') || (targets[0] == 'r'))) {
+			claw.Fire();
 		}
-	}
-*/
-
-	void AutonomousInit() {
-		robotDrive.SetSafetyEnabled(false);
-		AutoDrive(DRIVE_BITS_TO_INCHES * 24);
 	}
 
 	void RobotInit() {
@@ -401,24 +197,10 @@ public:
 
 		/* Send auto options */
 		// Starting Position
-		startingPosition.AddDefault(pos1, pos1);
-		startingPosition.AddObject(pos2, pos2);
-		startingPosition.AddObject(pos3, pos3);
+		startingPosition.AddDefault(startSwitchLeft,startSwitchLeft );
+		startingPosition.AddObject(startSwitchRight, startSwitchRight);
+		startingPosition.AddObject(startSwitchOff, startSwitchOff);
 		frc::SmartDashboard::PutData("Starting Position", &startingPosition);
-		// Whether or not to drop, left and right
-		autoDropLeft.AddDefault(autoDropLeftYes, autoDropLeftYes);
-		autoDropLeft.AddObject(autoDropLeftNo, autoDropLeftNo);
-		frc::SmartDashboard::PutData("Auto Drop Left", &autoDropLeft);
-		autoDropRight.AddDefault(autoDropRightYes, autoDropRightYes);
-		autoDropRight.AddObject(autoDropRightNo,autoDropRightNo);
-		frc::SmartDashboard::PutData("Auto Drop Right", &autoDropRight);
-		// Whether or not to wait, left and right
-		autoDelayLeft.AddDefault(autoDelayLeftNo, autoDelayLeftNo);
-		autoDelayLeft.AddObject(autoDelayLeftYes, autoDelayLeftYes);
-		frc::SmartDashboard::PutData("Auto Delay Left", &autoDelayLeft);
-		autoDelayRight.AddDefault(autoDelayRightNo, autoDelayRightNo);
-		autoDelayRight.AddObject(autoDelayRightYes, autoDelayRightYes);
-		frc::SmartDashboard::PutData("Auto Delay Right", &autoDelayRight);
 
 		// Calibrate Gyro
 		imu.Calibrate();

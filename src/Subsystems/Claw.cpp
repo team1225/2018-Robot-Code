@@ -7,72 +7,49 @@
 
 #include "Claw.h"
 
-#include <DoubleSolenoid.h>
-#include <Timer.h>
+#include <Talon.h>
+#include <Spark.h>
+#include <DriverStation.h>
 
 Claw::Claw(
-	int pcmId,
-	int clawForwardChannel, int clawReverseChannel,
-	int leftRamForwardChannel, int leftRamReverseChannel,
-	int rightRamForwardChannel, int rightRamReverseChannel
-) :
+	int frontPwm,
+	int backPwm,
+	int cubeSwitchPort
+) : 
 	Subsystem("ExampleSubsystem"),
-	theClaw {pcmId, clawForwardChannel, clawReverseChannel},
-	leftRam {pcmId, leftRamForwardChannel, leftRamReverseChannel},
-	rightRam {pcmId, rightRamForwardChannel, rightRamReverseChannel}
-{
-	this->Close();
-	this->PullRam();
+	frontMotors {frontPwm},
+	backMotors {backPwm},
+	cubeSwitch {cubeSwitchPort}
+{}
+
+void Claw::Push() {
+	frontMotors.Set(-1.00);
+	backMotors.Set(-1.00);
 }
 
-void Claw::Open() {
-	theClaw.Set(DoubleSolenoid::kForward);
-}
-
-void Claw::Close() {
-	theClaw.Set(DoubleSolenoid::kReverse);
-}
-
-void Claw::Toggle() {
-	if (this->GetPosition() == Claw::Position::kClosed) {
-		this->Open();
-	}
-	else if (this->GetPosition() == Claw::Position::kOpen) {
-		this->Close();
+void Claw::Pull() {
+	if (!cubeSwitch.Get()) { switchHit = true; }
+	if (hasCube) {
+		if (cubeSwitch.Get()) { hasCube = false; }
+	} else
+	if (switchHit) {
+		frontMotors.Set(0.30);
+		backMotors.Set(0.30);
+		cubePullCount++;
 	}
 	else {
-		this->Open();
+		frontMotors.Set(-0.75);
+		backMotors.Set(-0.75);
+	}
+
+	if ((cubePullCount >= CUBE_PULL_COUNT_MAX) && !cubeSwitch.Get()) {
+		hasCube = true;
 	}
 }
 
-void Claw::PushRam() {
-	leftRam.Set(DoubleSolenoid::kForward);
-	rightRam.Set(DoubleSolenoid::kForward);
-}
-
-void Claw::PullRam() {
-	leftRam.Set(DoubleSolenoid::kReverse);
-	rightRam.Set(DoubleSolenoid::kReverse);
-}
-
-void Claw::Fire() {
-	this->Open();
-	this->PushRam();
-	frc::Wait(2);
-	this->PullRam();
-}
-
-Claw::Position Claw::GetPosition() {
-	if (theClaw.Get() == DoubleSolenoid::kForward) {
-		return Claw::Position::kOpen;
-	}
-	else if (theClaw.Get() == DoubleSolenoid::kReverse) {
-		return Claw::Position::kClosed;
-	}
-	else {
-		theClaw.Set(DoubleSolenoid::kReverse);
-		return Claw::Position::kClosed;
-	}
+void Claw::Stop() {
+	frontMotors.Set(0.00);
+	backMotors.Set(0.00);
 }
 
 void Claw::InitDefaultCommand() {

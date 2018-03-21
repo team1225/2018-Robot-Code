@@ -36,14 +36,14 @@ public:
 	 * Faults Fault monitoring for WPI_TalonSRXs
 	 * DifferntialDrive(Motor, Motor) Combined drive object for use w/ two wheels
 	 * ADIS16448 IMU, used here as an advanced gyro (https://github.com/juchong/ADIS16448-RoboRIO-Driver)
-	 * Claw(PCM Id, PCM Channels) Abstraction of the robot's Claw
+	 * Claw(Front/Rear PWMs, DIO Port) Abstraction of the robot's Claw
 	 * Lifter(PCM Id, Default position, PCM Channels) Abstraction of the robot's Lifter and Arm
 	 * Joystick(USB Port) Joystick input from the Driver Station
 	 * SendableChooser<type> Option menu on the Smart Dashboard and ShuffleBoard
 	 * const std::string constant strings, used in the SendableChoosers
 	 * */
-	WPI_TalonSRX rightDrive{11};
-	WPI_TalonSRX leftDrive{10};
+	WPI_TalonSRX rightDrive{TALON_SRX_DRIVE_RIGHT_CHANNEL};
+	WPI_TalonSRX leftDrive{TALON_SRX_DRIVE_LEFT_CHANNEL};
 
 	Faults _faults_L;
 	Faults _faults_R;
@@ -56,10 +56,9 @@ public:
 	ADIS16448_IMU imu;
 
 	Claw claw{
-		PCM_ARM,
-		CLAW_FWD_CHANNEL, CLAW_BWD_CHANNEL,
-		LEFT_RAM_FWD_CHANNEL, LEFT_RAM_BWD_CHANNEL,
-		RIGHT_RAM_FWD_CHANNEL, RIGHT_RAM_BWD_CHANNEL
+		CLAW_FRONT_PWM,
+		CLAW_REAR_PWM,
+		CLAW_SWITCH_PORT
 	};
 	Lifter arm{
 		PCM_ARM, Lifter::Position::kUp,
@@ -132,20 +131,14 @@ public:
 			joystickButton9DBounce = false;
 		}
 
-		/* close/open grabber */
-		if (joystick.GetRawButton(6) && !joystickButton6DBounce) { // Left Button
-			joystickButton6DBounce = true;
-			claw.Toggle();
-		} else if (!joystick.GetRawButton(6)) {
-			joystickButton6DBounce = false;
-		}
-
-		/* fire grabber */
-		if (joystick.GetRawButton(10) && !joystickButton10DBounce) { // Left Trigger
-			joystickButton10DBounce = true;
-			claw.Fire();
-		} else if (!joystick.GetRawButton(10)) {
-			joystickButton10DBounce = false;
+		/* Pull/Eject cubes w/ the Claw */
+		if (joystick.GetRawButton(6)) { // Left Button
+			claw.Pull();
+		} else
+		if (joystick.GetRawButton(10)) { // Left Trigger
+			claw.Push();
+		} else {
+			claw.Stop();
 		}
 
 		/* drive motor at least 25%, Talons will auto-detect if sensor is out of phase */
@@ -174,11 +167,15 @@ public:
 
 		if ((startingPosition.GetSelected() == startSwitchLeft) &&
 				((targets[0] == 'L') || (targets[0] == 'l'))) {
-			claw.Fire();
+			claw.Push();
+			frc::Wait(0.5);
+			claw.Stop();
 		} else
 		if ((startingPosition.GetSelected() == startSwitchRight) &&
 				((targets[0] == 'R') || (targets[0] == 'r'))) {
-			claw.Fire();
+			claw.Push();
+			frc::Wait(0.5);
+			claw.Stop();
 		}
 	}
 
@@ -209,8 +206,6 @@ public:
 private:
 	bool joystickButton4DBounce = false;
 	bool joystickButton9DBounce = false;
-	bool joystickButton6DBounce = false;
-	bool joystickButton10DBounce = false;
 	std::stack<AutoActionTags> autoActions;
 };
 

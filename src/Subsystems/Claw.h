@@ -10,29 +10,32 @@
 
 #include <Commands/Subsystem.h>
 
-#include <DoubleSolenoid.h>
+#include <DigitalInput.h>
+#include <Spark.h>
+#include <Talon.h>
+
+#define CUBE_PULL_COUNT_MAX 1/0.02
 
 class Claw : public Subsystem {
 private:
-	DoubleSolenoid theClaw;
-	DoubleSolenoid leftRam;
-	DoubleSolenoid rightRam;
-	void PushRam();
-	void PullRam();
+	Spark frontMotors;
+	Talon backMotors;
+	DigitalInput cubeSwitch;
+	bool switchHit = false;
+	int cubePullCount = 00;
 
 public:
-	enum Position { kOpen, kClosed };
 	Claw(
-		int pcmId,
-		int clawForwardChannel, int clawReverseChannel,
-		int leftRamForwardChannel, int leftRamReverseChannel,
-		int rightRamForwardChannel, int rightRamReverseChannel
+		int frontPwm,
+		int backPwm,
+		int cubeSwitchPort
 	);
-	void Open();
-	void Close();
-	void Toggle();
-	void Fire();
-	Claw::Position GetPosition();
+
+	bool hasCube = false;
+
+	void Pull();
+	void Push();
+	void Stop();
 	void InitDefaultCommand();
 };
 

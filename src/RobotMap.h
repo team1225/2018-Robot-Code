@@ -13,6 +13,10 @@
 #define TALON_SRX_DRIVE_LEFT_CHANNEL 10
 #define TALON_SRX_DRIVE_RIGHT_CHANNEL 11
 
+#define CLAW_FRONT_PWM 1
+#define CLAW_REAR_PWM 0
+#define CLAW_SWITCH_PORT 0
+
 #define PCM_ARM 05
 #define PCM_BODY 06
 
@@ -21,14 +25,6 @@
 
 #define LIFT_FWD_CHANNEL 0 // PCM_BODY
 #define LIFT_BWD_CHANNEL 1
-
-#define CLAW_FWD_CHANNEL 2 // PCM_ARM
-#define CLAW_BWD_CHANNEL 3
-
-#define LEFT_RAM_FWD_CHANNEL 4 // PCM_ARM
-#define LEFT_RAM_BWD_CHANNEL 5
-#define RIGHT_RAM_FWD_CHANNEL 6
-#define RIGHT_RAM_BWD_CHANNEL 7
 
 enum SwitchTargetPos { Left, Right };
 

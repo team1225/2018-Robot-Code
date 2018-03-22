@@ -14,15 +14,11 @@
 #include <Spark.h>
 #include <Talon.h>
 
-#define CUBE_PULL_COUNT_MAX 1/0.02
-
 class Claw : public Subsystem {
 private:
 	Spark frontMotors;
 	Talon backMotors;
 	DigitalInput cubeSwitch;
-	bool switchHit = false;
-	int cubePullCount = 00;
 
 public:
 	Claw(
@@ -31,9 +27,8 @@ public:
 		int cubeSwitchPort
 	);
 
-	bool hasCube = false;
-
-	void Pull();
+	bool SwitchPressed();
+	void Spin(double speed);
 	void Push();
 	void Stop();
 	void InitDefaultCommand();

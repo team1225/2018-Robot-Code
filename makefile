@@ -17,6 +17,7 @@ OBJECTS := \
 	Debug/src/Robot.o \
 	Debug/src/Subsystems/Claw.o \
 	Debug/src/Subsystems/Lifter.o \
+	Debug/src/Commands/ClawPull.o \
 	Debug/src/ADIS16448_IMU/ADIS16448_IMU.o
 
 Debug/FRCUserProgram : $(OBJECTS)

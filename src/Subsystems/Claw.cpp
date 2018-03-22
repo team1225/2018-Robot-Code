@@ -16,46 +16,30 @@ Claw::Claw(
 	int backPwm,
 	int cubeSwitchPort
 ) : 
-	Subsystem("ExampleSubsystem"),
+	Subsystem("Claw"),
 	frontMotors {frontPwm},
 	backMotors {backPwm},
 	cubeSwitch {cubeSwitchPort}
 {}
 
-void Claw::Push() {
-	frontMotors.Set(-1.00);
-	backMotors.Set(-1.00);
+bool Claw::SwitchPressed() {
+	return !cubeSwitch.Get();
 }
 
-void Claw::Pull() {
-	if (!cubeSwitch.Get()) { switchHit = true; }
-	if (hasCube) {
-		if (cubeSwitch.Get()) { hasCube = false; }
-	} else
-	if (switchHit) {
-		frontMotors.Set(0.30);
-		backMotors.Set(0.30);
-		cubePullCount++;
-	}
-	else {
-		frontMotors.Set(-0.75);
-		backMotors.Set(-0.75);
-	}
+void Claw::Spin(double speed) {
+	frontMotors.Set(speed);
+	backMotors.Set(speed);
+}
 
-	if ((cubePullCount >= CUBE_PULL_COUNT_MAX) && !cubeSwitch.Get()) {
-		hasCube = true;
-	}
+void Claw::Push() {
+	this->Spin(-1.00);
 }
 
 void Claw::Stop() {
-	frontMotors.Set(0.00);
-	backMotors.Set(0.00);
+	this->Spin(0.00);
 }
 
 void Claw::InitDefaultCommand() {
 	// Set the default command for a subsystem here.
 	// SetDefaultCommand(new MySpecialCommand());
 }
-
-// Put methods for controlling this subsystem
-// here. Call these from Commands.

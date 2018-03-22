@@ -28,6 +28,7 @@
 
 #include "Subsystems/Claw.h"
 #include "Subsystems/Lifter.h"
+#include "Commands/ClawPull.h"
 
 class Robot : public frc::TimedRobot {
 public:
@@ -59,6 +60,9 @@ public:
 		CLAW_FRONT_PWM,
 		CLAW_REAR_PWM,
 		CLAW_SWITCH_PORT
+	};
+	ClawPull pullCmd{
+		claw
 	};
 	Lifter arm{
 		PCM_ARM, Lifter::Position::kUp,
@@ -132,13 +136,22 @@ public:
 		}
 
 		/* Pull/Eject cubes w/ the Claw */
-		if (joystick.GetRawButton(6)) { // Left Button
-			claw.Pull();
-		} else
-		if (joystick.GetRawButton(10)) { // Left Trigger
-			claw.Push();
-		} else {
-			claw.Stop();
+		if (joystick.GetRawButton(6) && !joystickButton6DBounce) { // Left Button
+			joystickButton6DBounce = true;
+			if (pullCmd.IsRunning()) {
+				pullCmd.Cancel();
+			}
+			else {
+				pullCmd.Start();
+			}
+		}
+		else {
+			joystickButton6DBounce = false;
+			if (joystick.GetRawButton(10)) { // Left Trigger
+				claw.Push();
+			} else {
+				claw.Stop();
+			}
 		}
 
 		/* drive motor at least 25%, Talons will auto-detect if sensor is out of phase */
@@ -206,6 +219,7 @@ public:
 private:
 	bool joystickButton4DBounce = false;
 	bool joystickButton9DBounce = false;
+	bool joystickButton6DBounce = false;
 	std::stack<AutoActionTags> autoActions;
 };
 

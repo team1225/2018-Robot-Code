@@ -94,7 +94,7 @@ public:
 
 		/* get gamepad stick values */
 		double forwMod = 0.70;
-		double turnMod = 0.50;
+		double turnMod = 0.40;
 		if (joystick.GetRawButton(12)) {
 			 turnMod = 0.70;
 		}
@@ -127,16 +127,16 @@ public:
 		}
 
 		/* lift/drop lift */
-		if (joystick.GetRawButton(9) && !joystickButton9DBounce) { // X Button
-			joystickButton9DBounce = true;
+		if (joystick.GetRawButton(10) && !joystickButton10DBounce) { // Start Button
+			joystickButton10DBounce = true;
 			arm.Lift();
 			lift.Toggle();
-		} else if (!joystick.GetRawButton(9)) {
-			joystickButton9DBounce = false;
+		} else if (!joystick.GetRawButton(10)) {
+			joystickButton10DBounce = false;
 		}
 
 		/* Pull/Eject cubes w/ the Claw */
-		if (joystick.GetRawButton(6) && !joystickButton6DBounce) { // Left Button
+		if (joystick.GetRawButton(6) && !joystickButton6DBounce) { // Right Bumper
 			joystickButton6DBounce = true;
 			if (pullCmd.IsRunning()) {
 				pullCmd.Cancel();
@@ -146,8 +146,12 @@ public:
 			}
 		}
 		else {
+			pullCmd.Cancel();
 			joystickButton6DBounce = false;
-			if (joystick.GetRawButton(10)) { // Left Trigger
+			if (joystick.GetRawButton(8)) { // Right Trigger
+				claw.Spin(0.45);
+			} else
+			if (joystick.GetRawButton(7)) { // Left Trigger
 				claw.Push();
 			} else {
 				claw.Stop();
@@ -218,7 +222,7 @@ public:
 
 private:
 	bool joystickButton4DBounce = false;
-	bool joystickButton9DBounce = false;
+	bool joystickButton10DBounce = false;
 	bool joystickButton6DBounce = false;
 	std::stack<AutoActionTags> autoActions;
 };

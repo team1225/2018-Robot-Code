@@ -12,7 +12,7 @@
 
 Lifter::Lifter(int pcmId, Lifter::Position defaultPosition,
 		int forwardChannel, int reverseChannel) :
-	Subsystem("ExampleSubsystem"),
+	Subsystem("Lifter"),
 	theLifter{pcmId, forwardChannel, reverseChannel}
 {
 	if (defaultPosition == Lifter::Position::kUp)

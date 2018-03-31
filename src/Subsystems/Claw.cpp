@@ -10,20 +10,22 @@
 #include <Talon.h>
 #include <Spark.h>
 #include <DriverStation.h>
+#include <DoubleSolenoid.h>
+#include <Timer.h>
 
 Claw::Claw(
 	int frontPwm,
 	int backPwm,
-	int cubeSwitchPort
+	int cubeSwitchPort,
+	int ramPcmId, int ramFwdPcm, int ramBwdPcm
 ) : 
-	Subsystem("Claw"),
+	Subsystem("ExampleSubsystem"),
 	frontMotors {frontPwm},
 	backMotors {backPwm},
-	cubeSwitch {cubeSwitchPort}
-{}
-
-bool Claw::SwitchPressed() {
-	return !cubeSwitch.Get();
+	cubeSwitch {cubeSwitchPort},
+	ram {ramPcmId, ramFwdPcm, ramBwdPcm}
+{
+	ram.Set(DoubleSolenoid::kReverse);
 }
 
 void Claw::Spin(double speed) {
@@ -31,15 +33,44 @@ void Claw::Spin(double speed) {
 	backMotors.Set(speed);
 }
 
-void Claw::Push() {
-	this->Spin(-1.00);
+void Claw::PushSlow() {
+	this->Spin(-0.50);
+}
+void Claw::PushFast() {
+	this->Spin(-0.85);
+}
+void Claw::PushFaster() {
+	this->Spin(0.00); // Coast
+	ram.Set(DoubleSolenoid::kForward);
+}
+
+void Claw::Pull() {
+	if (!cubeSwitch.Get()) { switchHit = true; }
+	if (hasCube) {
+		if (cubeSwitch.Get()) { hasCube = false; }
+	} else
+	if (switchHit) {
+		this->Spin(0.30);
+		cubePullCount++;
+	}
+	else {
+		this->Spin(0.75);
+	}
+
+	if ((cubePullCount >= CUBE_PULL_COUNT_MAX) && !cubeSwitch.Get()) {
+		hasCube = true;
+	}
 }
 
 void Claw::Stop() {
-	this->Spin(0.00);
+	this->Spin(0.20);
+	ram.Set(DoubleSolenoid::kReverse);
 }
 
 void Claw::InitDefaultCommand() {
 	// Set the default command for a subsystem here.
 	// SetDefaultCommand(new MySpecialCommand());
 }
+
+// Put methods for controlling this subsystem
+// here. Call these from Commands.

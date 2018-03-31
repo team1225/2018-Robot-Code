@@ -7,24 +7,25 @@
 
 #pragma once
 
-#include <Commands/Command.h>
-#include "../Subsystems/Claw.h"
+#include <Commands/Subsystem.h>
+#include <Servo.h>
 
-#define CUBE_PULL_COUNT_MAX 1/0.02
-
-class ClawPull: public frc::Command {
+class Buddy : public Subsystem {
 private:
-	bool switchHit = false;
-	int cubePullCount = 00;
-	bool hasCube = false;
-	Claw* claw;
+	Servo leftServo;
+	Servo rightServo;
+	int leftStart, leftTarget;
+	int rightStart, rightTarget;
+
 public:
-	ClawPull(Claw& usableClaw);
-	void CubeLost();
-	bool HasCube();
-	void Initialize() override;
-	void Execute() override;
-	bool IsFinished() override;
-	void End() override;
-	void Interrupted() override;
+	Buddy(
+		int leftPwm, int rightPwm,
+		int leftStart, int leftTarget,
+		int rightStart, int rightTarget
+	);
+
+	void Go();
+	void Return();
+	void Release();
+	void InitDefaultCommand() override;
 };

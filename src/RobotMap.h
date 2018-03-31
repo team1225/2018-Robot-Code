@@ -16,6 +16,8 @@
 #define CLAW_FRONT_PWM 1
 #define CLAW_REAR_PWM 0
 #define CLAW_SWITCH_PORT 0
+#define CLAW_RAM_FWD 2
+#define CLAW_RAM_BWD 3
 
 #define PCM_ARM 05
 #define PCM_BODY 06
@@ -26,27 +28,34 @@
 #define LIFT_FWD_CHANNEL 0 // PCM_BODY
 #define LIFT_BWD_CHANNEL 1
 
-enum SwitchTargetPos { Left, Right };
+/* Buddy System */
 
-/* Define Auto actions */
+#define BUDDY_LEFT_PWM 8
+#define BUDDY_RIGHT_PWM 9
 
-enum AutoActionTags {
-	Drive6ft,
-	Drive8ft,
-	Drive12ft,
-	Drive14ft,
-	Drive17ft,
-	Backup,
-	TurnLeft,
-	TurnRight,
-	DropCube
+#define BUDDY_LEFT_START 0
+#define BUDDY_LEFT_TARGET 90
+
+#define BUDDY_RIGHT_START 0
+#define BUDDY_RIGHT_TARGET 90
+
+/* Auto Stuff */
+enum AutoTargets {
+	LeftSwitch, RightSwitch,
+	LeftScale, RightScale,
+	NoneScale, None
 };
+#define AUTO_DRIVE_SPEED 0.75
+#define AUTO_TURN_SPEED 0.70
+bool IsBetween(float number, double lower, double upper) {
+	if ((number > lower) && (number <= upper))
+		return true;
+	else
+		return false;
+}
 
 /* Define Modifiers */
 
 #define DRIVE_BITS_TO_INCHES (4096 / (6*3.1415))
-
-#define TURN_ANGLE_OVERSTOP 10
-#define DRIVE_POSITION_OVERSTOP 100
 
 #endif /* SRC_ROBOTMAP_H_ */

@@ -10,5 +10,5 @@ let &path.="src/,src/Subsystems/,~/wpilib/cpp/current/include/,/usr/arm-frc-linu
 
 "nnoremap <C-b> :w <CR> :!make clean && make <CR>
 nnoremap <C-b> :make <CR>
-nnoremap <C-d> :!ant <CR>
+nnoremap <C-d> :make! deploy <CR>
 

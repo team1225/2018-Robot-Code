@@ -13,23 +13,35 @@
 #include <DigitalInput.h>
 #include <Spark.h>
 #include <Talon.h>
+#include <DoubleSolenoid.h>
+
+#define CUBE_PULL_COUNT_MAX 1/0.02
 
 class Claw : public Subsystem {
 private:
 	Spark frontMotors;
 	Talon backMotors;
 	DigitalInput cubeSwitch;
+	DoubleSolenoid ram;
+	bool switchHit = false;
+	int cubePullCount = 00;
+
+	void Spin(double speed);
 
 public:
 	Claw(
 		int frontPwm,
 		int backPwm,
-		int cubeSwitchPort
+		int cubeSwitchPort,
+		int ramPcmId, int ramFwdPcm, int ramBwdPcm
 	);
 
-	bool SwitchPressed();
-	void Spin(double speed);
-	void Push();
+	bool hasCube = false;
+
+	void Pull();
+	void PushSlow();
+	void PushFast();
+	void PushFaster();
 	void Stop();
 	void InitDefaultCommand();
 };

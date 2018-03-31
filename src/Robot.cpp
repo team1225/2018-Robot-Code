@@ -28,7 +28,7 @@
 
 #include "Subsystems/Claw.h"
 #include "Subsystems/Lifter.h"
-#include "Commands/ClawPull.h"
+#include "Subsystems/Buddy.h"
 
 class Robot : public frc::TimedRobot {
 public:
@@ -39,6 +39,7 @@ public:
 	 * ADIS16448 IMU, used here as an advanced gyro (https://github.com/juchong/ADIS16448-RoboRIO-Driver)
 	 * Claw(Front/Rear PWMs, DIO Port) Abstraction of the robot's Claw
 	 * Lifter(PCM Id, Default position, PCM Channels) Abstraction of the robot's Lifter and Arm
+	 * Buddy(left/right PWM, left/right Start Angle, left/right Target Angle) Abstraction of the buddy system
 	 * Joystick(USB Port) Joystick input from the Driver Station
 	 * SendableChooser<type> Option menu on the Smart Dashboard and ShuffleBoard
 	 * const std::string constant strings, used in the SendableChoosers
@@ -59,11 +60,10 @@ public:
 	Claw claw{
 		CLAW_FRONT_PWM,
 		CLAW_REAR_PWM,
-		CLAW_SWITCH_PORT
+		CLAW_SWITCH_PORT,
+		PCM_ARM, CLAW_RAM_FWD, CLAW_RAM_BWD
 	};
-	ClawPull pullCmd{
-		claw
-	};
+
 	Lifter arm{
 		PCM_ARM, Lifter::Position::kUp,
 		ARM_FWD_CHANNEL, ARM_BWD_CHANNEL};
@@ -72,13 +72,23 @@ public:
 		LIFT_FWD_CHANNEL, LIFT_BWD_CHANNEL
 	};
 
+	Buddy buddy{
+		BUDDY_LEFT_PWM, BUDDY_RIGHT_PWM,
+		BUDDY_LEFT_START, BUDDY_RIGHT_START,
+		BUDDY_LEFT_TARGET, BUDDY_RIGHT_TARGET
+	};
+
 	Joystick joystick{0};
 
 	SendableChooser<std::string> startingPosition;
 	const std::string
-		startSwitchLeft = "Aiming at the switch's left",
-		startSwitchRight = "Aiming at the switch's right",
-		startSwitchOff  = "Aiming past the switch";
+		startLeft = "Starting on the left of the switch",
+		startRight = "Starting  on the right of the switch";
+	SendableChooser<std::string> targetPreference;
+	const std::string
+		prefNone = "Just drive, no cube",
+		prefSwitch = "Target the switch, Scale is fallback",
+		prefScale = "Target the scale, Switch is fallback";
 
 	void DisabledInit() {
 		robotDrive.ArcadeDrive(0, 0, false);
@@ -93,8 +103,8 @@ public:
 	void TeleopPeriodic() {
 
 		/* get gamepad stick values */
-		double forwMod = 0.70;
-		double turnMod = 0.40;
+		double forwMod = 0.80;
+		double turnMod = 0.50;
 		if (joystick.GetRawButton(12)) {
 			 turnMod = 0.70;
 		}
@@ -113,6 +123,13 @@ public:
 		frc::SmartDashboard::PutNumber("Amps",
 			((leftDrive.GetOutputCurrent() + rightDrive.GetOutputCurrent()) / 2)
 		);
+		frc::SmartDashboard::PutNumber("Left Clicks",
+			(leftDrive.GetSelectedSensorPosition(0))
+		);
+		frc::SmartDashboard::PutNumber("Right Clicks",
+                        (rightDrive.GetSelectedSensorPosition(0))
+                );
+
 
 		/* drive robot */
 		robotDrive.ArcadeDrive(forw, turn, false);
@@ -136,26 +153,29 @@ public:
 		}
 
 		/* Pull/Eject cubes w/ the Claw */
-		if (joystick.GetRawButton(6) && !joystickButton6DBounce) { // Right Bumper
-			joystickButton6DBounce = true;
-			if (pullCmd.IsRunning()) {
-				pullCmd.Cancel();
-			}
-			else {
-				pullCmd.Start();
-			}
+		if (joystick.GetRawButton(6)) { // Right Bumper
+			claw.Pull();
+		} else
+		if (joystick.GetRawButton(1)) { // X Button
+			claw.PushFaster();
+			frc::Wait(0.50);
+		} else
+		if (joystick.GetRawButton(7)) { // Left Trigger
+			claw.PushSlow();
+		} else
+		if (joystick.GetRawButton(5)) { // Left Bumper
+			claw.PushFast();
+		} else {
+			claw.Stop();
 		}
-		else {
-			pullCmd.Cancel();
-			joystickButton6DBounce = false;
-			if (joystick.GetRawButton(8)) { // Right Trigger
-				claw.Spin(0.45);
-			} else
-			if (joystick.GetRawButton(7)) { // Left Trigger
-				claw.Push();
-			} else {
-				claw.Stop();
-			}
+
+		/* Drop buddy platforms */
+		if (joystick.GetRawButton(9)) { // Back Button
+			buddy.Go();
+			buddyDroped = true;
+		} else
+		if (buddyDroped) {
+			buddy.Release();
 		}
 
 		/* drive motor at least 25%, Talons will auto-detect if sensor is out of phase */
@@ -173,31 +193,200 @@ public:
 		std::cout << "Gyro Angle:" << imu.GetAngle();
 	}
 
+	void DriveStraight() {
+		double motorDiff = abs(leftDrive.GetSelectedSensorPosition(0)
+				- rightDrive.GetSelectedSensorPosition(0));
+		motorDiff = motorDiff * (1/(4028*4));
+		if (motorDiff > 0.20) { motorDiff = 0.20; }
+
+		robotDrive.ArcadeDrive(AUTO_DRIVE_SPEED, motorDiff);
+	}
+
 	void AutonomousInit() {
-		robotDrive.SetSafetyEnabled(false);
-
-		robotDrive.ArcadeDrive(0.45, 0);
-		frc::Wait(5);
-		robotDrive.ArcadeDrive(0, 0);
-
 		std::string targets = DriverStation::GetInstance().GetGameSpecificMessage();
+		autoTimer = new Timer();
 
-		if ((startingPosition.GetSelected() == startSwitchLeft) &&
-				((targets[0] == 'L') || (targets[0] == 'l'))) {
-			claw.Push();
-			frc::Wait(0.5);
+		if (targetPreference.GetSelected() == prefScale) {
+			if (startingPosition.GetSelected() == startLeft) {
+				if (targets[1] == 'L')
+					autoTarget = AutoTargets::LeftScale;
+				else if (targets[0] == 'L')
+					autoTarget = AutoTargets::LeftSwitch;
+			}
+			else if (startingPosition.GetSelected() == startRight) {
+				if (targets[1] == 'R')
+					autoTarget = AutoTargets::RightScale;
+				else if (targets[0] == 'R')
+					autoTarget = AutoTargets::RightSwitch;
+			}
+		}
+
+		else if (targetPreference.GetSelected() == prefSwitch) {
+			if (startingPosition.GetSelected() == startLeft) {
+				if (targets[0] == 'L')
+					autoTarget = AutoTargets::LeftSwitch;
+				else if (targets[1] == 'L')
+					autoTarget = AutoTargets::LeftScale;
+			}
+			else if (startingPosition.GetSelected() == startRight) {
+				if (targets[0] == 'R')
+					autoTarget = AutoTargets::RightSwitch;
+				else if (targets[1] == 'R')
+					autoTarget = AutoTargets::RightScale;
+			}
+		}
+
+		else if ((targetPreference.GetSelected() == prefScale) 
+				&& (autoTarget == AutoTargets::None)) {
+			autoTarget = AutoTargets::NoneScale;
+		}
+
+		autoTimer->Reset();
+		leftDrive.SetSelectedSensorPosition(0, 0, 100);
+		rightDrive.SetSelectedSensorPosition(0, 0, 100);
+
+		autoTimer->Start();
+	}
+
+	void AutonomousPeriodic() {
+		double curTime = autoTimer->Get();
+
+		/* Drive for 3 Seconds */
+		if (IsBetween(curTime, 0, 2.25)) {
+			DriveStraight();
 			claw.Stop();
-		} else
-		if ((startingPosition.GetSelected() == startSwitchRight) &&
-				((targets[0] == 'R') || (targets[0] == 'r'))) {
-			claw.Push();
-			frc::Wait(0.5);
-			claw.Stop();
+			lift.Drop();
+			arm.Lift();
+		}
+
+		/* Paths Diverge */
+		switch (autoTarget) {
+			case AutoTargets::LeftScale:
+				if (IsBetween(curTime, 2.25, 6)) {
+					DriveStraight();
+					claw.Stop();
+					lift.Lift();
+				}
+				if (IsBetween(curTime, 6, 6.5)) {
+					robotDrive.ArcadeDrive(0, AUTO_TURN_SPEED);
+					claw.Stop();
+					lift.Lift();
+					arm.Lift();
+				}
+				if (IsBetween(curTime, 6.5, 7.5)) {
+					robotDrive.ArcadeDrive(0, 0);
+					claw.Stop(); //claw.PushFaster();
+					lift.Lift();
+					arm.Lift();
+				}
+				if (IsBetween(curTime, 7.5, 8)) {
+					robotDrive.ArcadeDrive(-AUTO_DRIVE_SPEED, 0);
+					claw.Stop();
+					lift.Lift();
+					arm.Lift();
+				}
+				if (curTime > 8) {
+					robotDrive.ArcadeDrive(0, 0);
+					claw.Stop();
+					//lift.Drop();
+					//arm.Drop();
+					autoTarget = AutoTargets::None;
+				}
+				break;
+			case AutoTargets::RightScale:
+				if (IsBetween(curTime, 2.25, 6)) {
+					DriveStraight();
+					claw.Stop();
+					lift.Lift();
+					arm.Lift();
+				}
+				if (IsBetween(curTime, 6, 6.5)) {
+					robotDrive.ArcadeDrive(0, -AUTO_TURN_SPEED);
+					claw.Stop();
+					lift.Lift();
+					arm.Lift();
+				}
+				if (IsBetween(curTime, 6.5, 7.5)) {
+					robotDrive.ArcadeDrive(0, 0);
+					claw.Stop(); //claw.PushFaster();
+					lift.Lift();
+					arm.Lift();
+				}
+				if (IsBetween(curTime, 7.5, 8)) {
+					robotDrive.ArcadeDrive(-AUTO_DRIVE_SPEED, 0);
+					claw.Stop();
+					lift.Lift();
+					arm.Lift();
+				}
+				if (curTime > 8) {
+					robotDrive.ArcadeDrive(0, 0);
+					claw.Stop();
+					//lift.Drop();
+					//arm.Drop();
+					autoTarget = AutoTargets::None;
+				}
+				break;
+			case AutoTargets::NoneScale:
+				if (IsBetween(curTime, 2.25, 6)) {
+					DriveStraight();
+					claw.Stop();
+					lift.Lift();
+					arm.Lift();
+				}
+				if (curTime > 6) {
+					robotDrive.ArcadeDrive(0, 0);
+					claw.Stop();
+					lift.Lift();
+					arm.Lift();
+					autoTarget = AutoTargets::None;
+				}
+				break;
+			case AutoTargets::LeftSwitch:
+				if (IsBetween(curTime, 2.25, 4)) {
+					robotDrive.ArcadeDrive(AUTO_DRIVE_SPEED, AUTO_TURN_SPEED);
+					claw.Stop();
+				}
+				if (IsBetween(curTime, 4, 5)) {
+					robotDrive.ArcadeDrive(0, 0);
+					claw.PushSlow();
+				}
+				if (curTime > 5) {
+					robotDrive.ArcadeDrive(0, 0);
+					claw.Stop();
+					lift.Lift();
+					arm.Drop();
+					autoTarget = AutoTargets::None;
+				}
+				break;
+			case AutoTargets::RightSwitch:
+				if (IsBetween(curTime, 2.25, 4)) {
+					robotDrive.ArcadeDrive(AUTO_DRIVE_SPEED, -AUTO_TURN_SPEED);
+					claw.Stop();
+				}
+				if (IsBetween(curTime, 4, 5)) {
+					robotDrive.ArcadeDrive(0, 0);
+					claw.PushSlow();
+				}
+				if (curTime > 5) {
+					robotDrive.ArcadeDrive(0, 0);
+					claw.Stop();
+					autoTarget = AutoTargets::None;
+				}
+				break;
+			case AutoTargets::None:
+				if (IsBetween(curTime, 2.25, 4)) {
+					DriveStraight();
+					claw.Stop();
+				}
+				else {
+					robotDrive.ArcadeDrive(0, 0);
+					claw.Stop();
+				}
+				break;
 		}
 	}
 
 	void RobotInit() {
-
 		/* Set motor inverts */
 		leftDrive.SetInverted(false);
 		rightDrive.SetInverted(false);
@@ -211,20 +400,34 @@ public:
 
 		/* Send auto options */
 		// Starting Position
-		startingPosition.AddDefault(startSwitchLeft,startSwitchLeft );
-		startingPosition.AddObject(startSwitchRight, startSwitchRight);
-		startingPosition.AddObject(startSwitchOff, startSwitchOff);
+		startingPosition.AddDefault(startLeft,startLeft );
+		startingPosition.AddObject(startRight, startRight);
 		frc::SmartDashboard::PutData("Starting Position", &startingPosition);
+		// Target Preference
+		targetPreference.AddDefault(prefScale, prefScale);
+		targetPreference.AddObject(prefSwitch, prefSwitch);
+		targetPreference.AddObject(prefNone, prefNone);
+		frc::SmartDashboard::PutData("Target Preference", &targetPreference);
 
 		// Calibrate Gyro
 		imu.Calibrate();
 	}
 
+	void TestInit() {}
+	void TestPeriodic() {
+		if (joystick.GetRawButton(9)) { // Back Button
+			buddy.Return();
+			buddyDroped = false;
+		}
+	}
+
 private:
 	bool joystickButton4DBounce = false;
 	bool joystickButton10DBounce = false;
-	bool joystickButton6DBounce = false;
-	std::stack<AutoActionTags> autoActions;
+	bool buddyDroped = false;
+
+	frc::Timer* autoTimer;
+	AutoTargets autoTarget = AutoTargets::None;
 };
 
 START_ROBOT_CLASS(Robot)

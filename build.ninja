@@ -1,0 +1,42 @@
+root = .
+
+cxx = arm-frc-linux-gnueabi-g++
+
+cflags = -std=c++1y -O0 -Og -g3 -Wall -c -fmessage-length=0 -pthread $
+	   -I$$(HOME)/wpilib/cpp/current/include $
+	   -I$$(HOME)/wpilib/user/cpp/include $
+	   -Isrc
+ldflags = -L$$(HOME)/wpilib/common/current/lib/linux/athena/shared $
+	   -L/usr/arm-frc-linux-gnueabi/lib $
+	   -L$${HOME}/wpilib/cpp/current/reflib/linux/athena/shared $
+	   -L$${HOME}/wpilib/user/cpp/lib -pthread -rdynamic $
+	   -Wl,-rpath,/opt/GenICam_v3_0_NI/bin/Linux32_ARM,-rpath,/usr/local/frc/lib
+
+libs = -lCTRE_Phoenix -lCTRE_PhoenixCCI -lwpi
+
+rule cxx
+        command = $cxx -c $in -o $out
+        description = CXX $out
+
+rule link
+        command = $cxx $ldflags -o $out $in $libs
+        description = LINK $out
+
+build Debug/src/Robot.o: cxx $root/src/Robot.cpp
+build Debug/src/Subsystems/Claw.o: cxx $root/src/Subsystems/Claw.cpp
+build Debug/src/Subsystems/Lifter.o: cxx $root/src/Subsystems/Lifter.cpp
+build Debug/src/Subsystems/Buddy.o: cxx $root/src/Subsystems/Buddy.cpp
+build Debug/src/ADIS16448_IMU/ADIS16448_IMU.o: cxx $root/src/ADIS16448_IMU/ADIS16448_IMU.cpp
+
+build Debug/FRCUserProgram: link Debug/src/Robot.o $
+        Debug/src/Subsystems/Claw.o $
+        Debug/src/Subsystems/Lifter.o $
+        Debug/src/Subsystems/Buddy.o $
+        Debug/src/ADIS16448_IMU/ADIS16448_IMU.o
+
+rule ant-deploy
+        command = ant
+        description = Deploying...
+build deploy: ant-deploy
+
+build all: phony Debug/FRCUserProgram

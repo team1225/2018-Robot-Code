@@ -25,7 +25,8 @@
 #include <Commands/Scheduler.h>
 #include "ADIS16448_IMU/ADIS16448_IMU.h"
 #include "RobotMap.h"
-
+#include "WPILib.h"
+#include <CameraServer.h>
 #include "Subsystems/Claw.h"
 #include "Subsystems/Lifter.h"
 #include "Subsystems/Buddy.h"
@@ -250,18 +251,15 @@ public:
 
 	void AutonomousPeriodic() {
 		double curTime = autoTimer->Get();
-
-		/* Drive for 3 Seconds */
-		if (IsBetween(curTime, 0, 2.25)) {
-			DriveStraight();
-			claw.Stop();
-			lift.Drop();
-			arm.Lift();
-		}
-
-		/* Paths Diverge */
 		switch (autoTarget) {
+			// Target Left Scale
 			case AutoTargets::LeftScale:
+				if (IsBetween(curTime, 0, 2.25)) {
+					DriveStraight();
+					claw.Stop();
+					lift.Drop();
+					arm.Lift();
+				}
 				if (IsBetween(curTime, 2.25, 6)) {
 					DriveStraight();
 					claw.Stop();
@@ -288,12 +286,15 @@ public:
 				if (curTime > 8) {
 					robotDrive.ArcadeDrive(0, 0);
 					claw.Stop();
-					//lift.Drop();
-					//arm.Drop();
-					autoTarget = AutoTargets::None;
 				}
 				break;
 			case AutoTargets::RightScale:
+				if (IsBetween(curTime, 0, 2.25)) {
+					DriveStraight();
+					claw.Stop();
+					lift.Drop();
+					arm.Lift();
+				}
 				if (IsBetween(curTime, 2.25, 6)) {
 					DriveStraight();
 					claw.Stop();
@@ -321,12 +322,15 @@ public:
 				if (curTime > 8) {
 					robotDrive.ArcadeDrive(0, 0);
 					claw.Stop();
-					//lift.Drop();
-					//arm.Drop();
-					autoTarget = AutoTargets::None;
 				}
 				break;
 			case AutoTargets::NoneScale:
+				if (IsBetween(curTime, 0, 2.25)) {
+					DriveStraight();
+					claw.Stop();
+					lift.Drop();
+					arm.Lift();
+				}
 				if (IsBetween(curTime, 2.25, 6)) {
 					DriveStraight();
 					claw.Stop();
@@ -338,43 +342,60 @@ public:
 					claw.Stop();
 					lift.Lift();
 					arm.Lift();
-					autoTarget = AutoTargets::None;
 				}
 				break;
 			case AutoTargets::LeftSwitch:
-				if (IsBetween(curTime, 2.25, 4)) {
+				if (IsBetween(curTime, 0, 3.25)) {
+					DriveStraight();
+					claw.Stop();
+					lift.Drop();
+					arm.Lift();
+				}
+				if (IsBetween(curTime, 3.25, 4.0)) {
 					robotDrive.ArcadeDrive(AUTO_DRIVE_SPEED, AUTO_TURN_SPEED);
 					claw.Stop();
 				}
-				if (IsBetween(curTime, 4, 5)) {
+				if (IsBetween(curTime, 5, 6)) {
 					robotDrive.ArcadeDrive(0, 0);
+				}
+				if (IsBetween(curTime, 6, 6.5)) {
 					claw.PushSlow();
 				}
-				if (curTime > 5) {
+				if (curTime > 6.5) {
 					robotDrive.ArcadeDrive(0, 0);
 					claw.Stop();
-					lift.Lift();
-					arm.Drop();
-					autoTarget = AutoTargets::None;
 				}
 				break;
 			case AutoTargets::RightSwitch:
-				if (IsBetween(curTime, 2.25, 4)) {
+				if (IsBetween(curTime, 0, 3.25)) {
+					DriveStraight();
+					claw.Stop();
+					lift.Drop();
+					arm.Lift();
+				}
+				if (IsBetween(curTime, 3.25, 4.0)) {
 					robotDrive.ArcadeDrive(AUTO_DRIVE_SPEED, -AUTO_TURN_SPEED);
 					claw.Stop();
 				}
-				if (IsBetween(curTime, 4, 5)) {
+				if (IsBetween(curTime, 5, 6)) {
 					robotDrive.ArcadeDrive(0, 0);
+				}
+				if (IsBetween(curTime, 6, 6.5)) {
 					claw.PushSlow();
 				}
-				if (curTime > 5) {
+				if (curTime > 6.5) {
 					robotDrive.ArcadeDrive(0, 0);
 					claw.Stop();
-					autoTarget = AutoTargets::None;
+//					autoTarget = AutoTargets::None;
 				}
 				break;
 			case AutoTargets::None:
-				if (IsBetween(curTime, 2.25, 4)) {
+				if (IsBetween(curTime, 0, 10)) {
+					claw.Stop();
+					lift.Drop();
+					arm.Lift();
+				}
+				if (IsBetween(curTime, 10.25, 12.5)) {
 					DriveStraight();
 					claw.Stop();
 				}
@@ -387,6 +408,8 @@ public:
 	}
 
 	void RobotInit() {
+		/* Init Camera */
+//		CameraServer::GetInstance()->addAxisCamera("10.12.25.11");
 		/* Set motor inverts */
 		leftDrive.SetInverted(false);
 		rightDrive.SetInverted(false);

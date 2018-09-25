@@ -200,7 +200,7 @@ public:
 		motorDiff = motorDiff * (1/(4028*4));
 		if (motorDiff > 0.20) { motorDiff = 0.20; }
 
-		robotDrive.ArcadeDrive(AUTO_DRIVE_SPEED, motorDiff);
+		robotDrive.ArcadeDrive(AUTO_DRIVE_SPEED, -0.225);
 	}
 
 	void AutonomousInit() {
@@ -345,13 +345,13 @@ public:
 				}
 				break;
 			case AutoTargets::LeftSwitch:
-				if (IsBetween(curTime, 0, 3.25)) {
+				if (IsBetween(curTime, 0, 3.0)) {
 					DriveStraight();
 					claw.Stop();
 					lift.Drop();
 					arm.Lift();
 				}
-				if (IsBetween(curTime, 3.25, 4.0)) {
+				if (IsBetween(curTime, 3.0, 4.0)) {
 					robotDrive.ArcadeDrive(AUTO_DRIVE_SPEED, AUTO_TURN_SPEED);
 					claw.Stop();
 				}
@@ -359,21 +359,24 @@ public:
 					robotDrive.ArcadeDrive(0, 0);
 				}
 				if (IsBetween(curTime, 6, 6.5)) {
+					DriveStraight();
+				}
+				if (IsBetween(curTime, 6.5, 7)) {
 					claw.PushSlow();
 				}
-				if (curTime > 6.5) {
+				if (curTime > 7) {
 					robotDrive.ArcadeDrive(0, 0);
 					claw.Stop();
 				}
 				break;
 			case AutoTargets::RightSwitch:
-				if (IsBetween(curTime, 0, 3.25)) {
+				if (IsBetween(curTime, 0, 3.0)) {
 					DriveStraight();
 					claw.Stop();
 					lift.Drop();
 					arm.Lift();
 				}
-				if (IsBetween(curTime, 3.25, 4.0)) {
+				if (IsBetween(curTime, 3.0, 4.0)) {
 					robotDrive.ArcadeDrive(AUTO_DRIVE_SPEED, -AUTO_TURN_SPEED);
 					claw.Stop();
 				}
@@ -381,9 +384,12 @@ public:
 					robotDrive.ArcadeDrive(0, 0);
 				}
 				if (IsBetween(curTime, 6, 6.5)) {
+					DriveStraight();
+				}
+				if (IsBetween(curTime, 6.5, 7)) {
 					claw.PushSlow();
 				}
-				if (curTime > 6.5) {
+				if (curTime > 7) {
 					robotDrive.ArcadeDrive(0, 0);
 					claw.Stop();
 //					autoTarget = AutoTargets::None;

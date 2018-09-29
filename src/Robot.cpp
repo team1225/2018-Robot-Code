@@ -195,12 +195,12 @@ public:
 	}
 
 	void DriveStraight() {
-		double motorDiff = abs(leftDrive.GetSelectedSensorPosition(0)
-				- rightDrive.GetSelectedSensorPosition(0));
-		motorDiff = motorDiff * (1/(4028*4));
+		double motorDiff = leftDrive.GetSelectedSensorPosition(0)
+				- rightDrive.GetSelectedSensorPosition(0);
+		motorDiff = motorDiff * (1/(4096*4));
 		if (motorDiff > 0.20) { motorDiff = 0.20; }
-
-		robotDrive.ArcadeDrive(AUTO_DRIVE_SPEED, -0.225);
+		motorDiff = -0.225;
+		robotDrive.ArcadeDrive(AUTO_DRIVE_SPEED, motorDiff);
 	}
 
 	void AutonomousInit() {
